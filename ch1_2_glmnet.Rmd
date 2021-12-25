@@ -1,0 +1,418 @@
+# glmnet
+
+## 理論  
+
+## lasso 實作  
+
+* 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog [連結](https://juliasilge.com/blog/lasso-the-office/)  
+* 主要目的，是用 lasso regression，去預測 `The Office` 這個美國暢銷影集的某集 IMDB ratings  
+
+```{r}
+library(tidyverse)
+```
+
+### Explore the data  
+
+```{r}
+# ratings_raw <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-03-17/office_ratings.csv")
+# 
+# remove_regex = "[:punct:]|[:digit:]|parts |part |the |and"
+# 
+# office_ratings <- ratings_raw %>%
+#   transmute(
+#     episode_name = str_to_lower(title),
+#     episode_name = str_remove_all(
+#       episode_name, remove_regex
+#     ),
+#     episode_name = str_trim(episode_name),
+#     imdb_rating
+#   )
+# 
+# office_info <- schrute::theoffice %>%
+#   mutate(
+#     season = as.numeric(season),
+#     episode = as.numeric(episode),
+#     episode_name = str_to_lower(episode_name),
+#     episode_name = str_remove_all(episode_name, remove_regex),
+#     episode_name = str_trim(episode_name)
+#   ) %>%
+#   select(season, episode, episode_name, director, writer, character)
+# 
+# characters <- office_info %>%
+#   count(episode_name, character) %>%
+#   add_count(character, wt = n, name = "character_count") %>%
+#   filter(character_count > 800) %>%
+#   select(-character_count) %>%
+#   pivot_wider(
+#     names_from = character,
+#     values_from = n,
+#     values_fill = list(n = 0)
+#   )
+# 
+# creators <- office_info %>%
+#   distinct(episode_name, director, writer) %>%
+#   pivot_longer(director:writer, names_to = "role", values_to = "person") %>%
+#   separate_rows(person, sep = ";") %>%
+#   add_count(person) %>%
+#   filter(n > 10) %>%
+#   distinct(episode_name, person) %>%
+#   mutate(person_value = 1) %>%
+#   pivot_wider(
+#     names_from = person,
+#     values_from = person_value,
+#     values_fill = list(person_value = 0)
+#   )
+# 
+# office <- office_info %>%
+#   distinct(season, episode, episode_name) %>%
+#   inner_join(characters) %>%
+#   inner_join(creators) %>%
+#   inner_join(office_ratings %>%
+#     select(episode_name, imdb_rating)) %>%
+#   janitor::clean_names()
+# 
+# saveRDS(office, "model_example/glmnet/office.rds")
+office = readRDS("./data/office.rds")
+office
+```
+
+* 要拿來預測用的資料，n = 135, p = 32  
+* 變數說明：  
+  * imdb_rating: 要預測的目標 y (連續型)  
+  * episode_name 是 ID 欄位
+  * season 有被我當 predictor，因為我猜不同季的 rating會不同(例如一開始rating還好，到中間口碑變很好所以rating高，到最後幾季又開始拖戲和爛尾所以 rating 低)
+  * episode 也有被我當 predictor, 因為我猜不同 episode 的 rating 可能也不同 (例如每季剛開播，跟接近結束，可能 rating 較高，中間 rating 較低)  
+  * andy, angela, ..., justin_spitzer 共 28 個變數，都是人名，裡面的數值，表示該演員在這一集裡面，講過多少次話。這些也被我當 predictor，我猜有些演員很討喜，他講越多話 rating 可能越好。  
+* 整體看一下，有沒有 missing，以及分佈的狀況：  
+
+```{r}
+skimr::skim(office)
+```
+* 全部欄位都沒有 missing， y 的分佈蠻不錯的常態  
+* 這邊再做一個 EDA ，看看 episode 和 rating有沒有關係 (是不是每一季越到後面的集數，rating會越高？)  
+
+```{r}
+office %>%
+  ggplot(aes(episode, imdb_rating, fill = as.factor(episode))) +
+  geom_boxplot(show.legend = FALSE)
+```
+
+* 看起來的確有這個趨勢啊！  
+
+### Train a model  
+
+#### split data  
+
+```{r}
+library(rsample)
+set.seed(1234)
+office_split <- initial_split(office, strata = season)
+office_train <- training(office_split)
+office_test <- testing(office_split)
+
+# 資料太少，不用 cv ，改用 bootstrap
+set.seed(1234)
+office_boot <- bootstraps(office_train, strata = season)
+```
+
+#### preprocessing  
+
+```{r}
+library(recipes)
+office_rec <- recipe(imdb_rating ~ ., data = office_train) %>%
+  update_role(episode_name, new_role = "ID") %>% # episode 不把他當 predictor
+  step_zv(all_numeric(), -all_outcomes()) %>% # zero variance 對 回歸問題都會造成影響
+  step_normalize(all_numeric(), -all_outcomes()) # lasso 需要做 normalize
+```
+ 
+#### specify model  
+
+```{r}
+library(parsnip)
+library(tune)
+lasso_spec <- linear_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet")
+```
+
+* 可以看到，訂 model 的時候，我 specify 他的 penalty 要用 tuning 的，然後 mixture設為1 (就會是 lasso)  
+
+#### workflow setting  
+
+```{r}
+library(workflows)
+lasso_wf = workflow() %>%
+  add_recipe(office_rec) %>%
+  add_model(lasso_spec)
+
+lasso_wf
+```
+
+#### hyper parameter setting  
+
+```{r}
+library(dials)
+hyper_param_meta = lasso_spec %>%
+  parameters() %>%
+  finalize(office_train)
+
+hyper_param_meta
+```
+
+* 從 hyper parameter 的 meta data table，可看出：  
+  * identifier: penalty ，是這個超參數的 id  
+  * object: nparam[+] 的意思是，他是 numeric parameter，`+` 表示已有設定 range 在裡面  
+* 我們可以這樣看到他的 range，是在 log10 的尺度下，從 -10 到 0  
+
+```{r}
+hyper_param_meta %>%
+  pull_dials_object("penalty")
+```
+* 我想用 latin_hypercube，幫他在 feature space 中均勻撒 50 個點  
+
+```{r}
+my_grid = grid_latin_hypercube(hyper_param_meta, size = 50)
+my_grid %>%
+  arrange(penalty)
+```
+
+#### model fitting  
+
+##### tune hyper parameter  
+
+```{r}
+# 開平行運算
+library(doParallel)
+cl <- makePSOCKcluster(4) # Create a cluster object
+registerDoParallel(cl) # register
+
+library(yardstick)
+# fitting
+set.seed(130)
+lasso_tune <- 
+  tune::tune_grid(
+    object = lasso_wf,
+    resamples = office_boot,
+    metrics = metric_set(rmse, rsq),
+    grid = my_grid,
+    control = control_resamples(save_pred = TRUE, save_workflow = TRUE)
+)
+
+# 關平行運算
+stopCluster(cl)
+```
+
+* 看一下 tune 完後，最佳的 penalty 訂為多少  
+
+```{r}
+final_param = lasso_tune %>% select_best(metric = "rmse", maximize = FALSE)
+final_param
+```
+
+* 是 `r final_param$penalty`  
+* 來看一下 tunning 的過程：  
+
+```{r}
+lasso_tune %>%
+  collect_metrics() %>%
+  ggplot(aes(x = penalty, y = mean, color = .metric)) +
+  geom_errorbar(
+    aes(ymin = mean - std_err, ymax = mean + std_err), 
+    alpha = 0.5
+  ) +
+  geom_line(size = 1.5) +
+  geom_vline(xintercept = final_param$penalty, color = "blue", lty = 2) +
+  facet_wrap(~.metric, scales = "free", nrow = 2) +
+  scale_x_log10() +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+* nice，可以看到 lasso 的確有幫助到結果 (但看 r-square 可以發現頗慘烈，才 15% 而已)  
+
+#### finalize workflow & model  
+
+* 最後，用這組最佳參數，去 finalize 我們的 model  
+
+```{r}
+final_lasso_wf = lasso_wf %>% finalize_workflow(final_param) # finalized workflow
+final_lasso_fit <- final_lasso_wf %>% fit(office_train) # finalized model
+```
+
+### Prediction  
+
+* 對測試集做預測  
+
+```{r}
+# 對測試集做預測
+office_test_res <- bind_cols(
+  stats::predict(final_lasso_fit, office_test), # 預測值
+  office_test %>% select(imdb_rating) # 真值
+)
+office_test_res
+```
+
+### Evaluation  
+
+```{r}
+office_metrics <- yardstick::metric_set(rmse, rsq, mae)
+office_metrics(
+  data = office_test_res, 
+  truth = imdb_rating, 
+  estimate = .pred
+)
+```
+
+* hmm... r-square 實在是差強人意啊～  
+
+### Explaination  
+
+#### 變數重要性  
+
+* 先來看一下我們 fit 出的 model:  
+
+```{r}
+# parsnip model
+parsnip_model = final_lasso_fit %>%
+  fit(office_train) %>%
+  pull_workflow_fit()
+```
+
+```{r}
+coef_df = parsnip_model %>%
+  tidy() %>%
+  arrange(desc(abs(estimate)))
+
+coef_df
+```
+
+* 可以看到，最重要的是`r coef_df$term[2]`，再來是`r coef_df$term[3]`, 依此類推  
+* 通常在處理變數重要性時，都會用 `vip` 這個 package，因為他還有很多額外功能。
+
+```{r}
+library(vip)
+parsnip_model %>%
+  vip::vi(lambda = final_param$penalty)
+```
+
+* 可以看到，結果和剛剛的係數一模一樣。那這邊特別提醒，`vi()` 裡面要下 `lambda = ` 這個 argument。我一開始沒有下這個 argument，他就會自動去取最小的lambda值帶入，那就幾乎所有變數的係數都 >0，根本不是我要的。解釋可參考[這裡](https://stackoverflow.com/questions/64628970/glmnet-variable-importance-vip-vs-varimp)  
+
+* 那我們幫這個變數重要性畫圖：  
+
+```{r}
+parsnip_model %>%
+  vip::vi(lambda = final_param$penalty) %>%
+  mutate(
+    Importance = abs(Importance),
+    Variable = fct_reorder(Variable, Importance)
+  ) %>%
+  ggplot(aes(x = Importance, y = Variable, fill = Sign)) +
+  geom_col() +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(y = NULL)
+```
+
+* 可以看到，最重要的是`r coef_df$term[2]`(收視保證啊～)  
+* 那如果要挑出變數給別人看，就 filter 出係數大於 0 的變數就好：  
+
+```{r}
+parsnip_model %>%
+  tidy() %>%
+  filter(estimate!=0) %>%
+  arrange(desc(abs(estimate)))
+```
+
+### 統計推論  
+
+* 如果要做統計推論(哪些變數顯著)，
+
+#### 模型細節  
+
+* 如果你想看 glmnet 的模型細節，可以先取出原生 package 的物件：  
+
+```{r}
+# 原生 package 的物件
+glmnet_model = parsnip_model$fit
+```
+
+##### 法一：用 broom 幫忙 summarise (推薦)  
+
+```{r}
+glmnet_model %>%
+  broom::tidy(return_zeros = FALSE)
+```
+
+* 可以看到，每一個 term (變數)，在每一個 step (i.e. 對應的 lambda 下)，所得到的係數估計值，以及解釋變異量(dev.ratio, fraction of null deviance explained at each value of lambda)  
+* 他的 step 都是 1:72，從最大的 lambda 到最小的 lambda  
+* 來畫一下 shrinkage 過程
+
+```{r}
+tidied <- tidy(glmnet_model) %>% 
+  filter(term != "(Intercept)")
+
+ tidied %>%
+   ggplot(aes(lambda, estimate, col = term)) +
+   geom_line() +
+   scale_x_log10()
+```
+
+##### 法二：原生 pacage 的做法  
+
+```{r}
+glmnet_model
+```
+
+* 這是 glmnet 的標準output：  
+  * 第三欄的 Lambda，就是 penalty 為多少
+  * 第一欄的 Df = degree of freedom = 參數個數 = 有幾個變數的係數不等於 0  
+  * 第二欄的 %Dev 是指 the percent deviance explained
+  * 第一列，是 Lambda 最大時 (0.21)，沒有任何一個變數係數大於0。然後 lambda 慢慢放寬後，越來越多變數的係數大於 0  
+  
+* 如果想看各個變數 shrinkage 的過程，快速的方法可以這樣做：  
+
+```{r}
+plot(glmnet_model, xvar = "lambda", label = TRUE)
+```
+
+* 如果想畫美美的圖，就去拿原始資料：  
+
+```{r}
+glmnet_model$beta %>%
+  as.matrix() %>%
+  as.data.frame() %>%
+  .[c(1:5),c(1:5)]
+```
+* lambda mapping 自己做：
+
+```{r}
+lambda_mapping = data.frame(
+  lambda_index = paste0("s", 0:(length(glmnet_model$lambda)-1)),
+  lambda = glmnet_model$lambda
+)
+lambda_mapping
+```
+
+* 然後，自己轉成畫圖用資料：  
+
+```{r}
+df_for_plot = glmnet_model$beta %>%
+  as.matrix() %>%
+  as.data.frame() %>%
+  rownames_to_column("variable") %>%
+  pivot_longer(cols = -variable, names_to = "lambda_index", values_to = "coef") %>%
+  left_join(lambda_mapping, by = "lambda_index") %>%
+  group_by(variable) %>%
+  arrange(lambda) %>%
+  mutate(lambda_index = 1:n()) %>%
+  ungroup()
+df_for_plot
+```
+
+```{r}
+df_for_plot %>%
+  #filter(variable == "season") %>%
+  ggplot(aes(x = lambda, y=coef, col = variable)) +
+  geom_line() +
+  scale_x_log10()+
+  theme_bw()
+```
+

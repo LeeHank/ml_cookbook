@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 2 glmnet | ML Cookbook</title>
+<meta name="author" content="Hank Lee">
+<meta name="description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<meta name="generator" content="bookdown 0.24 with bs4_book()">
+<meta property="og:title" content="Chapter 2 glmnet | ML Cookbook">
+<meta property="og:type" content="book">
+<meta property="og:description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 2 glmnet | ML Cookbook">
+<meta name="twitter:description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/header-attrs-2.11/header-attrs.js"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><script src="libs/bs3compat-0.3.1/transition.js"></script><script src="libs/bs3compat-0.3.1/tabs.js"></script><script src="libs/bs3compat-0.3.1/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><link rel="stylesheet" href="bs4_style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="">ML Cookbook</a>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">About</a></li>
+<li class="book-part">Regression</li>
+<li><a class="" href="linear-model.html"><span class="header-section-number">1</span> Linear Model</a></li>
+<li><a class="active" href="glmnet.html"><span class="header-section-number">2</span> glmnet</a></li>
+<li><a class="" href="tree.html"><span class="header-section-number">3</span> Tree</a></li>
+<li><a class="" href="random-forest.html"><span class="header-section-number">4</span> Random Forest</a></li>
+<li><a class="" href="xgboost.html"><span class="header-section-number">5</span> xgboost</a></li>
+<li class="book-part">Binary Classification</li>
+<li><a class="" href="logistic-regression.html"><span class="header-section-number">6</span> Logistic Regression</a></li>
+<li><a class="" href="glmnet-1.html"><span class="header-section-number">7</span> glmnet</a></li>
+<li><a class="" href="tree-1.html"><span class="header-section-number">8</span> Tree</a></li>
+<li><a class="" href="random-forest-1.html"><span class="header-section-number">9</span> Random Forest</a></li>
+<li><a class="" href="xgboost-1.html"><span class="header-section-number">10</span> xgboost</a></li>
+<li class="book-part">Multi-Classification</li>
+<li><a class="" href="tree-2.html"><span class="header-section-number">11</span> Tree</a></li>
+<li class="book-part">Dimension Reduction</li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/rstudio/bookdown-demo">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="glmnet" class="section level1" number="2">
+<h1>
+<span class="header-section-number">2</span> glmnet<a class="anchor" aria-label="anchor" href="#glmnet"><i class="fas fa-link"></i></a>
+</h1>
+<div id="理論" class="section level2" number="2.1">
+<h2>
+<span class="header-section-number">2.1</span> 理論<a class="anchor" aria-label="anchor" href="#%E7%90%86%E8%AB%96"><i class="fas fa-link"></i></a>
+</h2>
+</div>
+<div id="lasso-實作" class="section level2" number="2.2">
+<h2>
+<span class="header-section-number">2.2</span> lasso 實作<a class="anchor" aria-label="anchor" href="#lasso-%E5%AF%A6%E4%BD%9C"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog <a href="https://juliasilge.com/blog/lasso-the-office/">連結</a><br>
+</li>
+<li>主要目的，是用 lasso regression，去預測 <code>The Office</code> 這個美國暢銷影集的某集 IMDB ratings</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></code></pre></div>
+<div id="explore-the-data" class="section level3" number="2.2.1">
+<h3>
+<span class="header-section-number">2.2.1</span> Explore the data<a class="anchor" aria-label="anchor" href="#explore-the-data"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># ratings_raw &lt;- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-03-17/office_ratings.csv")</span>
+<span class="co"># </span>
+<span class="co"># remove_regex = "[:punct:]|[:digit:]|parts |part |the |and"</span>
+<span class="co"># </span>
+<span class="co"># office_ratings &lt;- ratings_raw %&gt;%</span>
+<span class="co">#   transmute(</span>
+<span class="co">#     episode_name = str_to_lower(title),</span>
+<span class="co">#     episode_name = str_remove_all(</span>
+<span class="co">#       episode_name, remove_regex</span>
+<span class="co">#     ),</span>
+<span class="co">#     episode_name = str_trim(episode_name),</span>
+<span class="co">#     imdb_rating</span>
+<span class="co">#   )</span>
+<span class="co"># </span>
+<span class="co"># office_info &lt;- schrute::theoffice %&gt;%</span>
+<span class="co">#   mutate(</span>
+<span class="co">#     season = as.numeric(season),</span>
+<span class="co">#     episode = as.numeric(episode),</span>
+<span class="co">#     episode_name = str_to_lower(episode_name),</span>
+<span class="co">#     episode_name = str_remove_all(episode_name, remove_regex),</span>
+<span class="co">#     episode_name = str_trim(episode_name)</span>
+<span class="co">#   ) %&gt;%</span>
+<span class="co">#   select(season, episode, episode_name, director, writer, character)</span>
+<span class="co"># </span>
+<span class="co"># characters &lt;- office_info %&gt;%</span>
+<span class="co">#   count(episode_name, character) %&gt;%</span>
+<span class="co">#   add_count(character, wt = n, name = "character_count") %&gt;%</span>
+<span class="co">#   filter(character_count &gt; 800) %&gt;%</span>
+<span class="co">#   select(-character_count) %&gt;%</span>
+<span class="co">#   pivot_wider(</span>
+<span class="co">#     names_from = character,</span>
+<span class="co">#     values_from = n,</span>
+<span class="co">#     values_fill = list(n = 0)</span>
+<span class="co">#   )</span>
+<span class="co"># </span>
+<span class="co"># creators &lt;- office_info %&gt;%</span>
+<span class="co">#   distinct(episode_name, director, writer) %&gt;%</span>
+<span class="co">#   pivot_longer(director:writer, names_to = "role", values_to = "person") %&gt;%</span>
+<span class="co">#   separate_rows(person, sep = ";") %&gt;%</span>
+<span class="co">#   add_count(person) %&gt;%</span>
+<span class="co">#   filter(n &gt; 10) %&gt;%</span>
+<span class="co">#   distinct(episode_name, person) %&gt;%</span>
+<span class="co">#   mutate(person_value = 1) %&gt;%</span>
+<span class="co">#   pivot_wider(</span>
+<span class="co">#     names_from = person,</span>
+<span class="co">#     values_from = person_value,</span>
+<span class="co">#     values_fill = list(person_value = 0)</span>
+<span class="co">#   )</span>
+<span class="co"># </span>
+<span class="co"># office &lt;- office_info %&gt;%</span>
+<span class="co">#   distinct(season, episode, episode_name) %&gt;%</span>
+<span class="co">#   inner_join(characters) %&gt;%</span>
+<span class="co">#   inner_join(creators) %&gt;%</span>
+<span class="co">#   inner_join(office_ratings %&gt;%</span>
+<span class="co">#     select(episode_name, imdb_rating)) %&gt;%</span>
+<span class="co">#   janitor::clean_names()</span>
+<span class="co"># </span>
+<span class="co"># saveRDS(office, "model_example/glmnet/office.rds")</span>
+<span class="va">office</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">readRDS</a></span><span class="op">(</span><span class="st">"./data/office.rds"</span><span class="op">)</span>
+<span class="va">office</span>
+<span class="co">#&gt; # A tibble: 136 × 32</span>
+<span class="co">#&gt;    season episode episode_name     andy angela darryl dwight</span>
+<span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;           &lt;int&gt;  &lt;int&gt;  &lt;int&gt;  &lt;int&gt;</span>
+<span class="co">#&gt;  1      1       1 pilot               0      1      0     29</span>
+<span class="co">#&gt;  2      1       2 diversity day       0      4      0     17</span>
+<span class="co">#&gt;  3      1       3 health care         0      5      0     62</span>
+<span class="co">#&gt;  4      1       5 basketball          0      3     15     25</span>
+<span class="co">#&gt;  5      1       6 hot girl            0      3      0     28</span>
+<span class="co">#&gt;  6      2       1 dundies             0      1      1     32</span>
+<span class="co">#&gt;  7      2       2 sexual harassm…     0      2      9     11</span>
+<span class="co">#&gt;  8      2       3 office olympics     0      6      0     55</span>
+<span class="co">#&gt;  9      2       4 fire                0     17      0     65</span>
+<span class="co">#&gt; 10      2       5 halloween           0     13      0     33</span>
+<span class="co">#&gt; # … with 126 more rows, and 25 more variables: jim &lt;int&gt;,</span>
+<span class="co">#&gt; #   kelly &lt;int&gt;, kevin &lt;int&gt;, michael &lt;int&gt;, oscar &lt;int&gt;,</span>
+<span class="co">#&gt; #   pam &lt;int&gt;, phyllis &lt;int&gt;, ryan &lt;int&gt;, toby &lt;int&gt;,</span>
+<span class="co">#&gt; #   erin &lt;int&gt;, jan &lt;int&gt;, ken_kwapis &lt;dbl&gt;,</span>
+<span class="co">#&gt; #   greg_daniels &lt;dbl&gt;, b_j_novak &lt;dbl&gt;,</span>
+<span class="co">#&gt; #   paul_lieberstein &lt;dbl&gt;, mindy_kaling &lt;dbl&gt;,</span>
+<span class="co">#&gt; #   paul_feig &lt;dbl&gt;, gene_stupnitsky &lt;dbl&gt;, …</span></code></pre></div>
+<ul>
+<li>要拿來預測用的資料，n = 135, p = 32<br>
+</li>
+<li>變數說明：
+<ul>
+<li>imdb_rating: 要預測的目標 y (連續型)<br>
+</li>
+<li>episode_name 是 ID 欄位</li>
+<li>season 有被我當 predictor，因為我猜不同季的 rating會不同(例如一開始rating還好，到中間口碑變很好所以rating高，到最後幾季又開始拖戲和爛尾所以 rating 低)</li>
+<li>episode 也有被我當 predictor, 因為我猜不同 episode 的 rating 可能也不同 (例如每季剛開播，跟接近結束，可能 rating 較高，中間 rating 較低)<br>
+</li>
+<li>andy, angela, …, justin_spitzer 共 28 個變數，都是人名，裡面的數值，表示該演員在這一集裡面，講過多少次話。這些也被我當 predictor，我猜有些演員很討喜，他講越多話 rating 可能越好。<br>
+</li>
+</ul>
+</li>
+<li>整體看一下，有沒有 missing，以及分佈的狀況：</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">skimr</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/skimr/reference/skim.html">skim</a></span><span class="op">(</span><span class="va">office</span><span class="op">)</span></code></pre></div>
+<div class="inline-table"><table class="table table-sm">
+<caption>
+<span id="tab:unnamed-chunk-3">Table 2.1: </span>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">office</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">136</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">32</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">numeric</td>
+<td align="left">31</td>
+</tr>
+<tr class="even">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Variable type: character</strong></p>
+<div class="inline-table"><table class="table table-sm">
+<thead><tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="left">episode_name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">31</td>
+<td align="right">0</td>
+<td align="right">132</td>
+<td align="right">0</td>
+</tr></tbody>
+</table></div>
+<p><strong>Variable type: numeric</strong></p>
+<div class="inline-table"><table class="table table-sm">
+<thead><tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">p0</th>
+<th align="right">p25</th>
+<th align="right">p50</th>
+<th align="right">p75</th>
+<th align="right">p100</th>
+<th align="left">hist</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">season</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4.85</td>
+<td align="right">2.20</td>
+<td align="right">1.0</td>
+<td align="right">3.00</td>
+<td align="right">5.0</td>
+<td align="right">6.00</td>
+<td align="right">9.0</td>
+<td align="left">▆▇▅▇▃</td>
+</tr>
+<tr class="even">
+<td align="left">episode</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">12.66</td>
+<td align="right">7.52</td>
+<td align="right">1.0</td>
+<td align="right">5.75</td>
+<td align="right">13.0</td>
+<td align="right">19.00</td>
+<td align="right">28.0</td>
+<td align="left">▇▅▇▆▂</td>
+</tr>
+<tr class="odd">
+<td align="left">andy</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">18.10</td>
+<td align="right">18.20</td>
+<td align="right">0.0</td>
+<td align="right">2.75</td>
+<td align="right">13.5</td>
+<td align="right">28.00</td>
+<td align="right">75.0</td>
+<td align="left">▇▃▂▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">angela</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">8.85</td>
+<td align="right">9.77</td>
+<td align="right">0.0</td>
+<td align="right">3.00</td>
+<td align="right">5.0</td>
+<td align="right">12.00</td>
+<td align="right">52.0</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">darryl</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4.62</td>
+<td align="right">7.59</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">7.25</td>
+<td align="right">43.0</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">dwight</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">36.49</td>
+<td align="right">19.14</td>
+<td align="right">4.0</td>
+<td align="right">22.00</td>
+<td align="right">32.5</td>
+<td align="right">49.00</td>
+<td align="right">87.0</td>
+<td align="left">▅▇▃▂▂</td>
+</tr>
+<tr class="odd">
+<td align="left">jim</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">35.07</td>
+<td align="right">18.10</td>
+<td align="right">0.0</td>
+<td align="right">22.00</td>
+<td align="right">31.0</td>
+<td align="right">44.25</td>
+<td align="right">91.0</td>
+<td align="left">▂▇▃▂▁</td>
+</tr>
+<tr class="even">
+<td align="left">kelly</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5.22</td>
+<td align="right">5.85</td>
+<td align="right">0.0</td>
+<td align="right">1.00</td>
+<td align="right">3.0</td>
+<td align="right">8.00</td>
+<td align="right">28.0</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">kevin</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">8.78</td>
+<td align="right">6.67</td>
+<td align="right">0.0</td>
+<td align="right">4.00</td>
+<td align="right">7.0</td>
+<td align="right">13.00</td>
+<td align="right">31.0</td>
+<td align="left">▇▅▃▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">michael</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">70.37</td>
+<td align="right">37.67</td>
+<td align="right">0.0</td>
+<td align="right">51.75</td>
+<td align="right">76.5</td>
+<td align="right">95.00</td>
+<td align="right">159.0</td>
+<td align="left">▃▃▇▃▁</td>
+</tr>
+<tr class="odd">
+<td align="left">oscar</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">7.62</td>
+<td align="right">7.12</td>
+<td align="right">0.0</td>
+<td align="right">2.00</td>
+<td align="right">6.0</td>
+<td align="right">11.00</td>
+<td align="right">38.0</td>
+<td align="left">▇▃▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">pam</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">27.42</td>
+<td align="right">17.17</td>
+<td align="right">0.0</td>
+<td align="right">16.00</td>
+<td align="right">25.0</td>
+<td align="right">33.00</td>
+<td align="right">81.0</td>
+<td align="left">▅▇▃▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">phyllis</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5.46</td>
+<td align="right">5.32</td>
+<td align="right">0.0</td>
+<td align="right">2.00</td>
+<td align="right">4.0</td>
+<td align="right">7.00</td>
+<td align="right">27.0</td>
+<td align="left">▇▂▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ryan</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">6.16</td>
+<td align="right">8.47</td>
+<td align="right">0.0</td>
+<td align="right">1.00</td>
+<td align="right">4.0</td>
+<td align="right">8.00</td>
+<td align="right">60.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">toby</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4.69</td>
+<td align="right">7.26</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">2.0</td>
+<td align="right">7.00</td>
+<td align="right">37.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">erin</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5.35</td>
+<td align="right">9.06</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">9.00</td>
+<td align="right">52.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">jan</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5.04</td>
+<td align="right">12.68</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">73.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">ken_kwapis</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.10</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">greg_daniels</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.17</td>
+<td align="right">0.38</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="even">
+<td align="left">b_j_novak</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.13</td>
+<td align="right">0.34</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">paul_lieberstein</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.13</td>
+<td align="right">0.34</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">mindy_kaling</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.18</td>
+<td align="right">0.39</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▂</td>
+</tr>
+<tr class="odd">
+<td align="left">paul_feig</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.10</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">gene_stupnitsky</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.11</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">lee_eisenberg</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.11</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">jennifer_celotta</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.09</td>
+<td align="right">0.28</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">randall_einhorn</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.11</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">brent_forrester</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.10</td>
+<td align="right">0.31</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">jeffrey_blitz</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.08</td>
+<td align="right">0.27</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">justin_spitzer</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0.08</td>
+<td align="right">0.27</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0.00</td>
+<td align="right">1.0</td>
+<td align="left">▇▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">imdb_rating</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">8.37</td>
+<td align="right">0.51</td>
+<td align="right">6.8</td>
+<td align="right">8.10</td>
+<td align="right">8.3</td>
+<td align="right">8.70</td>
+<td align="right">9.7</td>
+<td align="left">▁▃▇▅▂</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>全部欄位都沒有 missing， y 的分佈蠻不錯的常態<br>
+</li>
+<li>這邊再做一個 EDA ，看看 episode 和 rating有沒有關係 (是不是每一季越到後面的集數，rating會越高？)</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">office</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">episode</span>, <span class="va">imdb_rating</span>, fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">episode</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span>show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-4-1.png" width="672"></div>
+<ul>
+<li>看起來的確有這個趨勢啊！</li>
+</ul>
+</div>
+<div id="train-a-model" class="section level3" number="2.2.2">
+<h3>
+<span class="header-section-number">2.2.2</span> Train a model<a class="anchor" aria-label="anchor" href="#train-a-model"><i class="fas fa-link"></i></a>
+</h3>
+<div id="split-data" class="section level4" number="2.2.2.1">
+<h4>
+<span class="header-section-number">2.2.2.1</span> split data<a class="anchor" aria-label="anchor" href="#split-data"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rsample.tidymodels.org">rsample</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
+<span class="va">office_split</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">initial_split</a></span><span class="op">(</span><span class="va">office</span>, strata <span class="op">=</span> <span class="va">season</span><span class="op">)</span>
+<span class="va">office_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">training</a></span><span class="op">(</span><span class="va">office_split</span><span class="op">)</span>
+<span class="va">office_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">testing</a></span><span class="op">(</span><span class="va">office_split</span><span class="op">)</span>
+
+<span class="co"># 資料太少，不用 cv ，改用 bootstrap</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
+<span class="va">office_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/bootstraps.html">bootstraps</a></span><span class="op">(</span><span class="va">office_train</span>, strata <span class="op">=</span> <span class="va">season</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="preprocessing" class="section level4" number="2.2.2.2">
+<h4>
+<span class="header-section-number">2.2.2.2</span> preprocessing<a class="anchor" aria-label="anchor" href="#preprocessing"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes">recipes</a></span><span class="op">)</span>
+<span class="va">office_rec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">imdb_rating</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">office_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/roles.html">update_role</a></span><span class="op">(</span><span class="va">episode_name</span>, new_role <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># episode 不把他當 predictor</span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># zero variance 對 回歸問題都會造成影響</span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># lasso 需要做 normalize</span></code></pre></div>
+</div>
+<div id="specify-model" class="section level4" number="2.2.2.3">
+<h4>
+<span class="header-section-number">2.2.2.3</span> specify model<a class="anchor" aria-label="anchor" href="#specify-model"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://parsnip.tidymodels.org">parsnip</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/tune">tune</a></span><span class="op">)</span>
+<span class="va">lasso_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/linear_reg.html">linear_reg</a></span><span class="op">(</span>penalty <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, mixture <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html">set_engine</a></span><span class="op">(</span><span class="st">"glmnet"</span><span class="op">)</span></code></pre></div>
+<ul>
+<li>可以看到，訂 model 的時候，我 specify 他的 penalty 要用 tuning 的，然後 mixture設為1 (就會是 lasso)</li>
+</ul>
+</div>
+<div id="workflow-setting" class="section level4" number="2.2.2.4">
+<h4>
+<span class="header-section-number">2.2.2.4</span> workflow setting<a class="anchor" aria-label="anchor" href="#workflow-setting"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflows">workflows</a></span><span class="op">)</span>
+<span class="va">lasso_wf</span> <span class="op">=</span> <span class="fu"><a href="https://workflows.tidymodels.org//reference/workflow.html">workflow</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://workflows.tidymodels.org//reference/add_recipe.html">add_recipe</a></span><span class="op">(</span><span class="va">office_rec</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://workflows.tidymodels.org//reference/add_model.html">add_model</a></span><span class="op">(</span><span class="va">lasso_spec</span><span class="op">)</span>
+
+<span class="va">lasso_wf</span>
+<span class="co">#&gt; ══ Workflow ════════════════════════════════════════════════</span>
+<span class="co">#&gt; Preprocessor: Recipe</span>
+<span class="co">#&gt; Model: linear_reg()</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ── Preprocessor ────────────────────────────────────────────</span>
+<span class="co">#&gt; 2 Recipe Steps</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; • step_zv()</span>
+<span class="co">#&gt; • step_normalize()</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; ── Model ───────────────────────────────────────────────────</span>
+<span class="co">#&gt; Linear Regression Model Specification (regression)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Main Arguments:</span>
+<span class="co">#&gt;   penalty = tune()</span>
+<span class="co">#&gt;   mixture = 1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Computational engine: glmnet</span></code></pre></div>
+</div>
+<div id="hyper-parameter-setting" class="section level4" number="2.2.2.5">
+<h4>
+<span class="header-section-number">2.2.2.5</span> hyper parameter setting<a class="anchor" aria-label="anchor" href="#hyper-parameter-setting"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dials.tidymodels.org">dials</a></span><span class="op">)</span>
+<span class="va">hyper_param_meta</span> <span class="op">=</span> <span class="va">lasso_spec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dials.tidymodels.org/reference/parameters.html">parameters</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dials.tidymodels.org/reference/finalize.html">finalize</a></span><span class="op">(</span><span class="va">office_train</span><span class="op">)</span>
+
+<span class="va">hyper_param_meta</span>
+<span class="co">#&gt; Collection of 1 parameters for tuning</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;  identifier    type    object</span>
+<span class="co">#&gt;     penalty penalty nparam[+]</span></code></pre></div>
+<ul>
+<li>從 hyper parameter 的 meta data table，可看出：
+<ul>
+<li>identifier: penalty ，是這個超參數的 id<br>
+</li>
+<li>object: nparam[+] 的意思是，他是 numeric parameter，<code>+</code> 表示已有設定 range 在裡面<br>
+</li>
+</ul>
+</li>
+<li>我們可以這樣看到他的 range，是在 log10 的尺度下，從 -10 到 0</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">hyper_param_meta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dials.tidymodels.org/reference/pull_dials_object.html">pull_dials_object</a></span><span class="op">(</span><span class="st">"penalty"</span><span class="op">)</span>
+<span class="co">#&gt; Amount of Regularization (quantitative)</span>
+<span class="co">#&gt; Transformer:  log-10 </span>
+<span class="co">#&gt; Range (transformed scale): [-10, 0]</span></code></pre></div>
+<ul>
+<li>我想用 latin_hypercube，幫他在 feature space 中均勻撒 50 個點</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my_grid</span> <span class="op">=</span> <span class="fu"><a href="https://dials.tidymodels.org/reference/grid_max_entropy.html">grid_latin_hypercube</a></span><span class="op">(</span><span class="va">hyper_param_meta</span>, size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>
+<span class="va">my_grid</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">penalty</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 50 × 1</span>
+<span class="co">#&gt;     penalty</span>
+<span class="co">#&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 1.12e-10</span>
+<span class="co">#&gt;  2 2.20e-10</span>
+<span class="co">#&gt;  3 3.64e-10</span>
+<span class="co">#&gt;  4 4.34e-10</span>
+<span class="co">#&gt;  5 7.01e-10</span>
+<span class="co">#&gt;  6 1.42e- 9</span>
+<span class="co">#&gt;  7 1.98e- 9</span>
+<span class="co">#&gt;  8 3.41e- 9</span>
+<span class="co">#&gt;  9 4.02e- 9</span>
+<span class="co">#&gt; 10 9.39e- 9</span>
+<span class="co">#&gt; # … with 40 more rows</span></code></pre></div>
+</div>
+<div id="model-fitting" class="section level4" number="2.2.2.6">
+<h4>
+<span class="header-section-number">2.2.2.6</span> model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"><i class="fas fa-link"></i></a>
+</h4>
+<div id="tune-hyper-parameter" class="section level5" number="2.2.2.6.1">
+<h5>
+<span class="header-section-number">2.2.2.6.1</span> tune hyper parameter<a class="anchor" aria-label="anchor" href="#tune-hyper-parameter"><i class="fas fa-link"></i></a>
+</h5>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># 開平行運算</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">doParallel</span><span class="op">)</span>
+<span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html">makePSOCKcluster</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span> <span class="co"># Create a cluster object</span>
+<span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html">registerDoParallel</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span> <span class="co"># register</span>
+
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/yardstick">yardstick</a></span><span class="op">)</span>
+<span class="co"># fitting</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">130</span><span class="op">)</span>
+<span class="va">lasso_tune</span> <span class="op">&lt;-</span> 
+  <span class="fu">tune</span><span class="fu">::</span><span class="fu"><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune_grid</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">lasso_wf</span>,
+    resamples <span class="op">=</span> <span class="va">office_boot</span>,
+    metrics <span class="op">=</span> <span class="fu"><a href="https://yardstick.tidymodels.org/reference/metric_set.html">metric_set</a></span><span class="op">(</span><span class="va">rmse</span>, <span class="va">rsq</span><span class="op">)</span>,
+    grid <span class="op">=</span> <span class="va">my_grid</span>,
+    control <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_grid.html">control_resamples</a></span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span>, save_workflow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="co"># 關平行運算</span>
+<span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></code></pre></div>
+<ul>
+<li>看一下 tune 完後，最佳的 penalty 訂為多少</li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">final_param</span> <span class="op">=</span> <span class="va">lasso_tune</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">select_best</a></span><span class="op">(</span>metric <span class="op">=</span> <span class="st">"rmse"</span>, maximize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="va">final_param</span>
+<span class="co">#&gt; # A tibble: 1 × 2</span>
+<span class="co">#&gt;   penalty .config              </span>
+<span class="co">#&gt;     &lt;dbl&gt; &lt;chr&gt;                </span>
+<span class="co">#&gt; 1  0.0481 Preprocessor1_Model44</span></code></pre></div>
+<ul>
+<li>是 0.0481234<br>
+</li>
+<li>來看一下 tunning 的過程：</li>
+</ul>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">lasso_tune</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">penalty</span>, y <span class="op">=</span> <span class="va">mean</span>, color <span class="op">=</span> <span class="va">.metric</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">mean</span> <span class="op">-</span> <span class="va">std_err</span>, ymax <span class="op">=</span> <span class="va">mean</span> <span class="op">+</span> <span class="va">std_err</span><span class="op">)</span>, 
+    alpha <span class="op">=</span> <span class="fl">0.5</span>
+  <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">final_param</span><span class="op">$</span><span class="va">penalty</span>, color <span class="op">=</span> <span class="st">"blue"</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">.metric</span>, scales <span class="op">=</span> <span class="st">"free"</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-14-1.png" width="672"></div>
+<ul>
+<li>nice，可以看到 lasso 的確有幫助到結果 (但看 r-square 可以發現頗慘烈，才 15% 而已)</li>
+</ul>
+</div>
+</div>
+<div id="finalize-workflow-model" class="section level4" number="2.2.2.7">
+<h4>
+<span class="header-section-number">2.2.2.7</span> finalize workflow &amp; model<a class="anchor" aria-label="anchor" href="#finalize-workflow-model"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>最後，用這組最佳參數，去 finalize 我們的 model</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">final_lasso_wf</span> <span class="op">=</span> <span class="va">lasso_wf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tune.tidymodels.org/reference/finalize_model.html">finalize_workflow</a></span><span class="op">(</span><span class="va">final_param</span><span class="op">)</span> <span class="co"># finalized workflow</span>
+<span class="va">final_lasso_fit</span> <span class="op">&lt;-</span> <span class="va">final_lasso_wf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">office_train</span><span class="op">)</span> <span class="co"># finalized model</span></code></pre></div>
+</div>
+</div>
+<div id="prediction" class="section level3" number="2.2.3">
+<h3>
+<span class="header-section-number">2.2.3</span> Prediction<a class="anchor" aria-label="anchor" href="#prediction"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>對測試集做預測</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># 對測試集做預測</span>
+<span class="va">office_test_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_cols</a></span><span class="op">(</span>
+  <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">final_lasso_fit</span>, <span class="va">office_test</span><span class="op">)</span>, <span class="co"># 預測值</span>
+  <span class="va">office_test</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">imdb_rating</span><span class="op">)</span> <span class="co"># 真值</span>
+<span class="op">)</span>
+<span class="va">office_test_res</span>
+<span class="co">#&gt; # A tibble: 36 × 2</span>
+<span class="co">#&gt;    .pred imdb_rating</span>
+<span class="co">#&gt;    &lt;dbl&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt;  1  8.56         7.6</span>
+<span class="co">#&gt;  2  8.80         8.2</span>
+<span class="co">#&gt;  3  8.33         8.2</span>
+<span class="co">#&gt;  4  8.67         8.2</span>
+<span class="co">#&gt;  5  8.39         7.9</span>
+<span class="co">#&gt;  6  8.46         8.2</span>
+<span class="co">#&gt;  7  8.41         8.3</span>
+<span class="co">#&gt;  8  8.26         8  </span>
+<span class="co">#&gt;  9  8.00         8.2</span>
+<span class="co">#&gt; 10  8.31         8.5</span>
+<span class="co">#&gt; # … with 26 more rows</span></code></pre></div>
+</div>
+<div id="evaluation" class="section level3" number="2.2.4">
+<h3>
+<span class="header-section-number">2.2.4</span> Evaluation<a class="anchor" aria-label="anchor" href="#evaluation"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">office_metrics</span> <span class="op">&lt;-</span> <span class="fu">yardstick</span><span class="fu">::</span><span class="fu"><a href="https://yardstick.tidymodels.org/reference/metric_set.html">metric_set</a></span><span class="op">(</span><span class="va">rmse</span>, <span class="va">rsq</span>, <span class="va">mae</span><span class="op">)</span>
+<span class="fu">office_metrics</span><span class="op">(</span>
+  data <span class="op">=</span> <span class="va">office_test_res</span>, 
+  truth <span class="op">=</span> <span class="va">imdb_rating</span>, 
+  estimate <span class="op">=</span> <span class="va">.pred</span>
+<span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 3</span>
+<span class="co">#&gt;   .metric .estimator .estimate</span>
+<span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 rmse    standard       0.428</span>
+<span class="co">#&gt; 2 rsq     standard       0.109</span>
+<span class="co">#&gt; 3 mae     standard       0.343</span></code></pre></div>
+<ul>
+<li>hmm… r-square 實在是差強人意啊～</li>
+</ul>
+</div>
+<div id="explaination" class="section level3" number="2.2.5">
+<h3>
+<span class="header-section-number">2.2.5</span> Explaination<a class="anchor" aria-label="anchor" href="#explaination"><i class="fas fa-link"></i></a>
+</h3>
+<div id="變數重要性" class="section level4" number="2.2.5.1">
+<h4>
+<span class="header-section-number">2.2.5.1</span> 變數重要性<a class="anchor" aria-label="anchor" href="#%E8%AE%8A%E6%95%B8%E9%87%8D%E8%A6%81%E6%80%A7"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>先來看一下我們 fit 出的 model:</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># parsnip model</span>
+<span class="va">parsnip_model</span> <span class="op">=</span> <span class="va">final_lasso_fit</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">office_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://workflows.tidymodels.org//reference/workflow-extractors.html">pull_workflow_fit</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">coef_df</span> <span class="op">=</span> <span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+
+<span class="va">coef_df</span>
+<span class="co">#&gt; # A tibble: 31 × 3</span>
+<span class="co">#&gt;    term            estimate penalty</span>
+<span class="co">#&gt;    &lt;chr&gt;              &lt;dbl&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 (Intercept)       8.37    0.0481</span>
+<span class="co">#&gt;  2 michael           0.162   0.0481</span>
+<span class="co">#&gt;  3 greg_daniels      0.101   0.0481</span>
+<span class="co">#&gt;  4 episode           0.0613  0.0481</span>
+<span class="co">#&gt;  5 kelly            -0.0420  0.0481</span>
+<span class="co">#&gt;  6 jim               0.0410  0.0481</span>
+<span class="co">#&gt;  7 jan               0.0406  0.0481</span>
+<span class="co">#&gt;  8 angela            0.0387  0.0481</span>
+<span class="co">#&gt;  9 paul_feig         0.0332  0.0481</span>
+<span class="co">#&gt; 10 randall_einhorn  -0.0277  0.0481</span>
+<span class="co">#&gt; # … with 21 more rows</span></code></pre></div>
+<ul>
+<li>可以看到，最重要的是michael，再來是greg_daniels, 依此類推<br>
+</li>
+<li>通常在處理變數重要性時，都會用 <code>vip</code> 這個 package，因為他還有很多額外功能。</li>
+</ul>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/koalaverse/vip/">vip</a></span><span class="op">)</span>
+<span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu">vip</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/vip/man/vi.html">vi</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">final_param</span><span class="op">$</span><span class="va">penalty</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 30 × 3</span>
+<span class="co">#&gt;    Variable         Importance Sign </span>
+<span class="co">#&gt;    &lt;chr&gt;                 &lt;dbl&gt; &lt;chr&gt;</span>
+<span class="co">#&gt;  1 michael              0.162  POS  </span>
+<span class="co">#&gt;  2 greg_daniels         0.101  POS  </span>
+<span class="co">#&gt;  3 episode              0.0613 POS  </span>
+<span class="co">#&gt;  4 kelly                0.0420 NEG  </span>
+<span class="co">#&gt;  5 jim                  0.0410 POS  </span>
+<span class="co">#&gt;  6 jan                  0.0406 POS  </span>
+<span class="co">#&gt;  7 angela               0.0387 POS  </span>
+<span class="co">#&gt;  8 paul_feig            0.0332 POS  </span>
+<span class="co">#&gt;  9 randall_einhorn      0.0277 NEG  </span>
+<span class="co">#&gt; 10 paul_lieberstein     0.0119 POS  </span>
+<span class="co">#&gt; # … with 20 more rows</span></code></pre></div>
+<ul>
+<li><p>可以看到，結果和剛剛的係數一模一樣。那這邊特別提醒，<code><a href="https://rdrr.io/pkg/vip/man/vi.html">vi()</a></code> 裡面要下 <code>lambda =</code> 這個 argument。我一開始沒有下這個 argument，他就會自動去取最小的lambda值帶入，那就幾乎所有變數的係數都 &gt;0，根本不是我要的。解釋可參考<a href="https://stackoverflow.com/questions/64628970/glmnet-variable-importance-vip-vs-varimp">這裡</a></p></li>
+<li><p>那我們幫這個變數重要性畫圖：</p></li>
+</ul>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu">vip</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/vip/man/vi.html">vi</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">final_param</span><span class="op">$</span><span class="va">penalty</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    Importance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">Importance</span><span class="op">)</span>,
+    Variable <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_reorder.html">fct_reorder</a></span><span class="op">(</span><span class="va">Variable</span>, <span class="va">Importance</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Importance</span>, y <span class="op">=</span> <span class="va">Variable</span>, fill <span class="op">=</span> <span class="va">Sign</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-21-1.png" width="672"></div>
+<ul>
+<li>可以看到，最重要的是michael(收視保證啊～)<br>
+</li>
+<li>那如果要挑出變數給別人看，就 filter 出係數大於 0 的變數就好：</li>
+</ul>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 13 × 3</span>
+<span class="co">#&gt;    term             estimate penalty</span>
+<span class="co">#&gt;    &lt;chr&gt;               &lt;dbl&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 (Intercept)       8.37     0.0481</span>
+<span class="co">#&gt;  2 michael           0.162    0.0481</span>
+<span class="co">#&gt;  3 greg_daniels      0.101    0.0481</span>
+<span class="co">#&gt;  4 episode           0.0613   0.0481</span>
+<span class="co">#&gt;  5 kelly            -0.0420   0.0481</span>
+<span class="co">#&gt;  6 jim               0.0410   0.0481</span>
+<span class="co">#&gt;  7 jan               0.0406   0.0481</span>
+<span class="co">#&gt;  8 angela            0.0387   0.0481</span>
+<span class="co">#&gt;  9 paul_feig         0.0332   0.0481</span>
+<span class="co">#&gt; 10 randall_einhorn  -0.0277   0.0481</span>
+<span class="co">#&gt; 11 paul_lieberstein  0.0119   0.0481</span>
+<span class="co">#&gt; 12 darryl            0.00653  0.0481</span>
+<span class="co">#&gt; 13 dwight            0.00592  0.0481</span></code></pre></div>
+</div>
+</div>
+<div id="統計推論" class="section level3" number="2.2.6">
+<h3>
+<span class="header-section-number">2.2.6</span> 統計推論<a class="anchor" aria-label="anchor" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>如果要做統計推論(哪些變數顯著)，</li>
+</ul>
+<div id="模型細節" class="section level4" number="2.2.6.1">
+<h4>
+<span class="header-section-number">2.2.6.1</span> 模型細節<a class="anchor" aria-label="anchor" href="#%E6%A8%A1%E5%9E%8B%E7%B4%B0%E7%AF%80"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>如果你想看 glmnet 的模型細節，可以先取出原生 package 的物件：</li>
+</ul>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># 原生 package 的物件</span>
+<span class="va">glmnet_model</span> <span class="op">=</span> <span class="va">parsnip_model</span><span class="op">$</span><span class="va">fit</span></code></pre></div>
+<div id="法一用-broom-幫忙-summarise-推薦" class="section level5" number="2.2.6.1.1">
+<h5>
+<span class="header-section-number">2.2.6.1.1</span> 法一：用 broom 幫忙 summarise (推薦)<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%B8%80%E7%94%A8-broom-%E5%B9%AB%E5%BF%99-summarise-%E6%8E%A8%E8%96%A6"><i class="fas fa-link"></i></a>
+</h5>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">glmnet_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>return_zeros <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 1,550 × 5</span>
+<span class="co">#&gt;    term         step estimate lambda dev.ratio</span>
+<span class="co">#&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 (Intercept)     1     8.37  0.242    0     </span>
+<span class="co">#&gt;  2 (Intercept)     2     8.37  0.220    0.0357</span>
+<span class="co">#&gt;  3 (Intercept)     3     8.37  0.201    0.0654</span>
+<span class="co">#&gt;  4 (Intercept)     4     8.37  0.183    0.0900</span>
+<span class="co">#&gt;  5 (Intercept)     5     8.37  0.167    0.110 </span>
+<span class="co">#&gt;  6 (Intercept)     6     8.37  0.152    0.136 </span>
+<span class="co">#&gt;  7 (Intercept)     7     8.37  0.138    0.162 </span>
+<span class="co">#&gt;  8 (Intercept)     8     8.37  0.126    0.183 </span>
+<span class="co">#&gt;  9 (Intercept)     9     8.37  0.115    0.201 </span>
+<span class="co">#&gt; 10 (Intercept)    10     8.37  0.105    0.223 </span>
+<span class="co">#&gt; # … with 1,540 more rows</span></code></pre></div>
+<ul>
+<li>可以看到，每一個 term (變數)，在每一個 step (i.e. 對應的 lambda 下)，所得到的係數估計值，以及解釋變異量(dev.ratio, fraction of null deviance explained at each value of lambda)<br>
+</li>
+<li>他的 step 都是 1:72，從最大的 lambda 到最小的 lambda<br>
+</li>
+<li>來畫一下 shrinkage 過程</li>
+</ul>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">tidied</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">glmnet_model</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op">!=</span> <span class="st">"(Intercept)"</span><span class="op">)</span>
+
+ <span class="va">tidied</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">lambda</span>, <span class="va">estimate</span>, col <span class="op">=</span> <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-25-1.png" width="672"></div>
+</div>
+<div id="法二原生-pacage-的做法" class="section level5" number="2.2.6.1.2">
+<h5>
+<span class="header-section-number">2.2.6.1.2</span> 法二：原生 pacage 的做法<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%BA%8C%E5%8E%9F%E7%94%9F-pacage-%E7%9A%84%E5%81%9A%E6%B3%95"><i class="fas fa-link"></i></a>
+</h5>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">glmnet_model</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:  glmnet::glmnet(x = maybe_matrix(x), y = y, family = "gaussian",      alpha = ~1) </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;    Df  %Dev   Lambda</span>
+<span class="co">#&gt; 1   0  0.00 0.241600</span>
+<span class="co">#&gt; 2   1  3.57 0.220200</span>
+<span class="co">#&gt; 3   1  6.54 0.200600</span>
+<span class="co">#&gt; 4   1  9.00 0.182800</span>
+<span class="co">#&gt; 5   1 11.04 0.166500</span>
+<span class="co">#&gt; 6   2 13.60 0.151800</span>
+<span class="co">#&gt; 7   2 16.16 0.138300</span>
+<span class="co">#&gt; 8   2 18.28 0.126000</span>
+<span class="co">#&gt; 9   3 20.09 0.114800</span>
+<span class="co">#&gt; 10  4 22.33 0.104600</span>
+<span class="co">#&gt; 11  6 24.72 0.095310</span>
+<span class="co">#&gt; 12  8 27.41 0.086840</span>
+<span class="co">#&gt; 13 10 30.23 0.079120</span>
+<span class="co">#&gt; 14 10 33.18 0.072090</span>
+<span class="co">#&gt; 15 10 35.63 0.065690</span>
+<span class="co">#&gt; 16 11 37.69 0.059850</span>
+<span class="co">#&gt; 17 11 39.51 0.054540</span>
+<span class="co">#&gt; 18 12 41.20 0.049690</span>
+<span class="co">#&gt; 19 12 42.66 0.045280</span>
+<span class="co">#&gt; 20 12 43.86 0.041260</span>
+<span class="co">#&gt; 21 12 44.86 0.037590</span>
+<span class="co">#&gt; 22 12 45.69 0.034250</span>
+<span class="co">#&gt; 23 12 46.38 0.031210</span>
+<span class="co">#&gt; 24 12 46.96 0.028440</span>
+<span class="co">#&gt; 25 13 47.52 0.025910</span>
+<span class="co">#&gt; 26 16 48.03 0.023610</span>
+<span class="co">#&gt; 27 18 48.54 0.021510</span>
+<span class="co">#&gt; 28 20 49.08 0.019600</span>
+<span class="co">#&gt; 29 20 49.63 0.017860</span>
+<span class="co">#&gt; 30 20 50.08 0.016270</span>
+<span class="co">#&gt; 31 21 50.65 0.014830</span>
+<span class="co">#&gt; 32 21 51.18 0.013510</span>
+<span class="co">#&gt; 33 21 51.62 0.012310</span>
+<span class="co">#&gt; 34 20 51.98 0.011220</span>
+<span class="co">#&gt; 35 22 52.36 0.010220</span>
+<span class="co">#&gt; 36 22 52.71 0.009311</span>
+<span class="co">#&gt; 37 22 53.00 0.008484</span>
+<span class="co">#&gt; 38 22 53.24 0.007730</span>
+<span class="co">#&gt; 39 22 53.43 0.007044</span>
+<span class="co">#&gt; 40 22 53.60 0.006418</span>
+<span class="co">#&gt; 41 23 53.74 0.005848</span>
+<span class="co">#&gt; 42 24 53.88 0.005328</span>
+<span class="co">#&gt; 43 25 54.02 0.004855</span>
+<span class="co">#&gt; 44 25 54.14 0.004424</span>
+<span class="co">#&gt; 45 25 54.23 0.004031</span>
+<span class="co">#&gt; 46 25 54.31 0.003673</span>
+<span class="co">#&gt; 47 27 54.38 0.003346</span>
+<span class="co">#&gt; 48 27 54.45 0.003049</span>
+<span class="co">#&gt; 49 28 54.52 0.002778</span>
+<span class="co">#&gt; 50 28 54.58 0.002531</span>
+<span class="co">#&gt; 51 28 54.62 0.002307</span>
+<span class="co">#&gt; 52 28 54.66 0.002102</span>
+<span class="co">#&gt; 53 28 54.70 0.001915</span>
+<span class="co">#&gt; 54 28 54.73 0.001745</span>
+<span class="co">#&gt; 55 28 54.75 0.001590</span>
+<span class="co">#&gt; 56 28 54.77 0.001449</span>
+<span class="co">#&gt; 57 28 54.78 0.001320</span>
+<span class="co">#&gt; 58 28 54.80 0.001203</span>
+<span class="co">#&gt; 59 28 54.81 0.001096</span>
+<span class="co">#&gt; 60 28 54.82 0.000998</span>
+<span class="co">#&gt; 61 28 54.82 0.000910</span>
+<span class="co">#&gt; 62 28 54.83 0.000829</span>
+<span class="co">#&gt; 63 28 54.84 0.000755</span>
+<span class="co">#&gt; 64 28 54.84 0.000688</span>
+<span class="co">#&gt; 65 28 54.84 0.000627</span>
+<span class="co">#&gt; 66 28 54.85 0.000571</span>
+<span class="co">#&gt; 67 28 54.85 0.000521</span>
+<span class="co">#&gt; 68 28 54.85 0.000474</span>
+<span class="co">#&gt; 69 28 54.85 0.000432</span>
+<span class="co">#&gt; 70 28 54.86 0.000394</span>
+<span class="co">#&gt; 71 28 54.86 0.000359</span>
+<span class="co">#&gt; 72 28 54.86 0.000327</span>
+<span class="co">#&gt; 73 28 54.86 0.000298</span>
+<span class="co">#&gt; 74 28 54.86 0.000271</span>
+<span class="co">#&gt; 75 28 54.86 0.000247</span>
+<span class="co">#&gt; 76 28 54.86 0.000225</span></code></pre></div>
+<ul>
+<li>這是 glmnet 的標準output：
+<ul>
+<li>第三欄的 Lambda，就是 penalty 為多少</li>
+<li>第一欄的 Df = degree of freedom = 參數個數 = 有幾個變數的係數不等於 0<br>
+</li>
+<li>第二欄的 %Dev 是指 the percent deviance explained</li>
+<li>第一列，是 Lambda 最大時 (0.21)，沒有任何一個變數係數大於0。然後 lambda 慢慢放寬後，越來越多變數的係數大於 0</li>
+</ul>
+</li>
+<li>如果想看各個變數 shrinkage 的過程，快速的方法可以這樣做：</li>
+</ul>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">glmnet_model</span>, xvar <span class="op">=</span> <span class="st">"lambda"</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-27-1.png" width="672"></div>
+<ul>
+<li>如果想畫美美的圖，就去拿原始資料：</li>
+</ul>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">glmnet_model</span><span class="op">$</span><span class="va">beta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="va">.</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">]</span>
+<span class="co">#&gt;         s0 s1 s2 s3 s4</span>
+<span class="co">#&gt; season   0  0  0  0  0</span>
+<span class="co">#&gt; episode  0  0  0  0  0</span>
+<span class="co">#&gt; andy     0  0  0  0  0</span>
+<span class="co">#&gt; angela   0  0  0  0  0</span>
+<span class="co">#&gt; darryl   0  0  0  0  0</span></code></pre></div>
+<ul>
+<li>lambda mapping 自己做：</li>
+</ul>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">lambda_mapping</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
+  lambda_index <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"s"</span>, <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">glmnet_model</span><span class="op">$</span><span class="va">lambda</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,
+  lambda <span class="op">=</span> <span class="va">glmnet_model</span><span class="op">$</span><span class="va">lambda</span>
+<span class="op">)</span>
+<span class="va">lambda_mapping</span>
+<span class="co">#&gt;    lambda_index       lambda</span>
+<span class="co">#&gt; 1            s0 0.2416331546</span>
+<span class="co">#&gt; 2            s1 0.2201671311</span>
+<span class="co">#&gt; 3            s2 0.2006080900</span>
+<span class="co">#&gt; 4            s3 0.1827866202</span>
+<span class="co">#&gt; 5            s4 0.1665483606</span>
+<span class="co">#&gt; 6            s5 0.1517526633</span>
+<span class="co">#&gt; 7            s6 0.1382713749</span>
+<span class="co">#&gt; 8            s7 0.1259877271</span>
+<span class="co">#&gt; 9            s8 0.1147953247</span>
+<span class="co">#&gt; 10           s9 0.1045972244</span>
+<span class="co">#&gt; 11          s10 0.0953050953</span>
+<span class="co">#&gt; 12          s11 0.0868384533</span>
+<span class="co">#&gt; 13          s12 0.0791239644</span>
+<span class="co">#&gt; 14          s13 0.0720948095</span>
+<span class="co">#&gt; 15          s14 0.0656901053</span>
+<span class="co">#&gt; 16          s15 0.0598543774</span>
+<span class="co">#&gt; 17          s16 0.0545370795</span>
+<span class="co">#&gt; 18          s17 0.0496921557</span>
+<span class="co">#&gt; 19          s18 0.0452776415</span>
+<span class="co">#&gt; 20          s19 0.0412553006</span>
+<span class="co">#&gt; 21          s20 0.0375902934</span>
+<span class="co">#&gt; 22          s21 0.0342508754</span>
+<span class="co">#&gt; 23          s22 0.0312081220</span>
+<span class="co">#&gt; 24          s23 0.0284356784</span>
+<span class="co">#&gt; 25          s24 0.0259095311</span>
+<span class="co">#&gt; 26          s25 0.0236077998</span>
+<span class="co">#&gt; 27          s26 0.0215105479</span>
+<span class="co">#&gt; 28          s27 0.0195996101</span>
+<span class="co">#&gt; 29          s28 0.0178584348</span>
+<span class="co">#&gt; 30          s29 0.0162719407</span>
+<span class="co">#&gt; 31          s30 0.0148263863</span>
+<span class="co">#&gt; 32          s31 0.0135092510</span>
+<span class="co">#&gt; 33          s32 0.0123091264</span>
+<span class="co">#&gt; 34          s33 0.0112156175</span>
+<span class="co">#&gt; 35          s34 0.0102192530</span>
+<span class="co">#&gt; 36          s35 0.0093114027</span>
+<span class="co">#&gt; 37          s36 0.0084842034</span>
+<span class="co">#&gt; 38          s37 0.0077304901</span>
+<span class="co">#&gt; 39          s38 0.0070437347</span>
+<span class="co">#&gt; 40          s39 0.0064179887</span>
+<span class="co">#&gt; 41          s40 0.0058478323</span>
+<span class="co">#&gt; 42          s41 0.0053283270</span>
+<span class="co">#&gt; 43          s42 0.0048549731</span>
+<span class="co">#&gt; 44          s43 0.0044236707</span>
+<span class="co">#&gt; 45          s44 0.0040306840</span>
+<span class="co">#&gt; 46          s45 0.0036726091</span>
+<span class="co">#&gt; 47          s46 0.0033463446</span>
+<span class="co">#&gt; 48          s47 0.0030490646</span>
+<span class="co">#&gt; 49          s48 0.0027781941</span>
+<span class="co">#&gt; 50          s49 0.0025313870</span>
+<span class="co">#&gt; 51          s50 0.0023065055</span>
+<span class="co">#&gt; 52          s51 0.0021016020</span>
+<span class="co">#&gt; 53          s52 0.0019149014</span>
+<span class="co">#&gt; 54          s53 0.0017447869</span>
+<span class="co">#&gt; 55          s54 0.0015897848</span>
+<span class="co">#&gt; 56          s55 0.0014485527</span>
+<span class="co">#&gt; 57          s56 0.0013198673</span>
+<span class="co">#&gt; 58          s57 0.0012026139</span>
+<span class="co">#&gt; 59          s58 0.0010957770</span>
+<span class="co">#&gt; 60          s59 0.0009984312</span>
+<span class="co">#&gt; 61          s60 0.0009097333</span>
+<span class="co">#&gt; 62          s61 0.0008289151</span>
+<span class="co">#&gt; 63          s62 0.0007552766</span>
+<span class="co">#&gt; 64          s63 0.0006881799</span>
+<span class="co">#&gt; 65          s64 0.0006270439</span>
+<span class="co">#&gt; 66          s65 0.0005713390</span>
+<span class="co">#&gt; 67          s66 0.0005205829</span>
+<span class="co">#&gt; 68          s67 0.0004743357</span>
+<span class="co">#&gt; 69          s68 0.0004321970</span>
+<span class="co">#&gt; 70          s69 0.0003938018</span>
+<span class="co">#&gt; 71          s70 0.0003588176</span>
+<span class="co">#&gt; 72          s71 0.0003269412</span>
+<span class="co">#&gt; 73          s72 0.0002978966</span>
+<span class="co">#&gt; 74          s73 0.0002714323</span>
+<span class="co">#&gt; 75          s74 0.0002473190</span>
+<span class="co">#&gt; 76          s75 0.0002253479</span></code></pre></div>
+<ul>
+<li>然後，自己轉成畫圖用資料：</li>
+</ul>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_for_plot</span> <span class="op">=</span> <span class="va">glmnet_model</span><span class="op">$</span><span class="va">beta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rownames_to_column</a></span><span class="op">(</span><span class="st">"variable"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="op">-</span><span class="va">variable</span>, names_to <span class="op">=</span> <span class="st">"lambda_index"</span>, values_to <span class="op">=</span> <span class="st">"coef"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">lambda_mapping</span>, by <span class="op">=</span> <span class="st">"lambda_index"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>lambda_index <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">df_for_plot</span>
+<span class="co">#&gt; # A tibble: 2,280 × 4</span>
+<span class="co">#&gt;    variable lambda_index    coef   lambda</span>
+<span class="co">#&gt;    &lt;chr&gt;           &lt;int&gt;   &lt;dbl&gt;    &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 season              1 -0.0456 0.000225</span>
+<span class="co">#&gt;  2 episode             1  0.133  0.000225</span>
+<span class="co">#&gt;  3 andy                1  0.0319 0.000225</span>
+<span class="co">#&gt;  4 angela              1  0.0734 0.000225</span>
+<span class="co">#&gt;  5 darryl              1  0.0745 0.000225</span>
+<span class="co">#&gt;  6 dwight              1 -0.0168 0.000225</span>
+<span class="co">#&gt;  7 jim                 1  0.108  0.000225</span>
+<span class="co">#&gt;  8 kelly               1 -0.128  0.000225</span>
+<span class="co">#&gt;  9 kevin               1 -0.0471 0.000225</span>
+<span class="co">#&gt; 10 michael             1  0.186  0.000225</span>
+<span class="co">#&gt; # … with 2,270 more rows</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_for_plot</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="co">#filter(variable == "season") %&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">lambda</span>, y<span class="op">=</span><span class="va">coef</span>, col <span class="op">=</span> <span class="va">variable</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-31-1.png" width="672"></div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+  <div class="chapter-nav">
+<div class="prev"><a href="linear-model.html"><span class="header-section-number">1</span> Linear Model</a></div>
+<div class="next"><a href="tree.html"><span class="header-section-number">3</span> Tree</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#glmnet"><span class="header-section-number">2</span> glmnet</a></li>
+<li><a class="nav-link" href="#%E7%90%86%E8%AB%96"><span class="header-section-number">2.1</span> 理論</a></li>
+<li>
+<a class="nav-link" href="#lasso-%E5%AF%A6%E4%BD%9C"><span class="header-section-number">2.2</span> lasso 實作</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#explore-the-data"><span class="header-section-number">2.2.1</span> Explore the data</a></li>
+<li><a class="nav-link" href="#train-a-model"><span class="header-section-number">2.2.2</span> Train a model</a></li>
+<li><a class="nav-link" href="#prediction"><span class="header-section-number">2.2.3</span> Prediction</a></li>
+<li><a class="nav-link" href="#evaluation"><span class="header-section-number">2.2.4</span> Evaluation</a></li>
+<li><a class="nav-link" href="#explaination"><span class="header-section-number">2.2.5</span> Explaination</a></li>
+<li><a class="nav-link" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><span class="header-section-number">2.2.6</span> 統計推論</a></li>
+</ul>
+</li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/rstudio/bookdown-demo/blob/master/ch1_2_glmnet.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/rstudio/bookdown-demo/edit/master/ch1_2_glmnet.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>ML Cookbook</strong>" was written by Hank Lee. It was last built on 2021-12-25.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer>
+</body>
+</html>
