@@ -4,16 +4,16 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Chapter 2 glmnet | ML Cookbook</title>
+<title>Chapter 3 glmnet | ML Cookbook</title>
 <meta name="author" content="Hank Lee">
-<meta name="description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<meta name="description" content="3.1 理論   3.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  3.2.1 Explore the data # ratings_raw &lt;-...">
 <meta name="generator" content="bookdown 0.24 with bs4_book()">
-<meta property="og:title" content="Chapter 2 glmnet | ML Cookbook">
+<meta property="og:title" content="Chapter 3 glmnet | ML Cookbook">
 <meta property="og:type" content="book">
-<meta property="og:description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<meta property="og:description" content="3.1 理論   3.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  3.2.1 Explore the data # ratings_raw &lt;-...">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Chapter 2 glmnet | ML Cookbook">
-<meta name="twitter:description" content="2.1 理論   2.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  2.2.1 Explore the data # ratings_raw &lt;-...">
+<meta name="twitter:title" content="Chapter 3 glmnet | ML Cookbook">
+<meta name="twitter:description" content="3.1 理論   3.2 lasso 實作 這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog 連結 主要目的，是用 lasso regression，去預測 The Office 這個美國暢銷影集的某集 IMDB ratings library(tidyverse)  3.2.1 Explore the data # ratings_raw &lt;-...">
 <!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/header-attrs-2.11/header-attrs.js"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><script src="libs/bs3compat-0.3.1/transition.js"></script><script src="libs/bs3compat-0.3.1/tabs.js"></script><script src="libs/bs3compat-0.3.1/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
@@ -40,20 +40,21 @@
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
 <li><a class="" href="index.html">About</a></li>
+<li class="book-part">Preprocess</li>
+<li><a class="" href="recipes.html"><span class="header-section-number">1</span> Recipes</a></li>
 <li class="book-part">Regression</li>
-<li><a class="" href="linear-model.html"><span class="header-section-number">1</span> Linear Model</a></li>
-<li><a class="active" href="glmnet.html"><span class="header-section-number">2</span> glmnet</a></li>
-<li><a class="" href="tree.html"><span class="header-section-number">3</span> Tree</a></li>
-<li><a class="" href="random-forest.html"><span class="header-section-number">4</span> Random Forest</a></li>
-<li><a class="" href="xgboost.html"><span class="header-section-number">5</span> xgboost</a></li>
+<li><a class="" href="linear-model-1.html"><span class="header-section-number">2</span> Linear Model</a></li>
+<li><a class="active" href="glmnet.html"><span class="header-section-number">3</span> glmnet</a></li>
+<li><a class="" href="tree.html"><span class="header-section-number">4</span> Tree</a></li>
+<li><a class="" href="random-forest-1.html"><span class="header-section-number">5</span> Random Forest</a></li>
+<li><a class="" href="xgboost-1.html"><span class="header-section-number">6</span> xgboost</a></li>
 <li class="book-part">Binary Classification</li>
-<li><a class="" href="logistic-regression.html"><span class="header-section-number">6</span> Logistic Regression</a></li>
-<li><a class="" href="glmnet-1.html"><span class="header-section-number">7</span> glmnet</a></li>
-<li><a class="" href="tree-1.html"><span class="header-section-number">8</span> Tree</a></li>
-<li><a class="" href="random-forest-1.html"><span class="header-section-number">9</span> Random Forest</a></li>
-<li><a class="" href="xgboost-1.html"><span class="header-section-number">10</span> xgboost</a></li>
+<li><a class="" href="logistic-regression.html"><span class="header-section-number">7</span> Logistic Regression</a></li>
+<li><a class="" href="glmnet-1.html"><span class="header-section-number">8</span> glmnet</a></li>
+<li><a class="" href="random-forest-2.html"><span class="header-section-number">9</span> Random Forest</a></li>
+<li><a class="" href="xgboost-2.html"><span class="header-section-number">10</span> xgboost</a></li>
 <li class="book-part">Multi-Classification</li>
-<li><a class="" href="tree-2.html"><span class="header-section-number">11</span> Tree</a></li>
+<li><a class="" href="tree-1.html"><span class="header-section-number">11</span> Tree</a></li>
 <li class="book-part">Dimension Reduction</li>
 </ul>
 
@@ -62,31 +63,31 @@
         </div>
       </nav>
 </div>
-  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="glmnet" class="section level1" number="2">
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="glmnet" class="section level1" number="3">
 <h1>
-<span class="header-section-number">2</span> glmnet<a class="anchor" aria-label="anchor" href="#glmnet"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3</span> glmnet<a class="anchor" aria-label="anchor" href="#glmnet"><i class="fas fa-link"></i></a>
 </h1>
-<div id="理論" class="section level2" number="2.1">
+<div id="理論" class="section level2" number="3.1">
 <h2>
-<span class="header-section-number">2.1</span> 理論<a class="anchor" aria-label="anchor" href="#%E7%90%86%E8%AB%96"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.1</span> 理論<a class="anchor" aria-label="anchor" href="#%E7%90%86%E8%AB%96"><i class="fas fa-link"></i></a>
 </h2>
 </div>
-<div id="lasso-實作" class="section level2" number="2.2">
+<div id="lasso-實作" class="section level2" number="3.2">
 <h2>
-<span class="header-section-number">2.2</span> lasso 實作<a class="anchor" aria-label="anchor" href="#lasso-%E5%AF%A6%E4%BD%9C"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2</span> lasso 實作<a class="anchor" aria-label="anchor" href="#lasso-%E5%AF%A6%E4%BD%9C"><i class="fas fa-link"></i></a>
 </h2>
 <ul>
 <li>這篇文章摘自 Julia Silge 在 2020/5/17 寫的 blog <a href="https://juliasilge.com/blog/lasso-the-office/">連結</a><br>
 </li>
 <li>主要目的，是用 lasso regression，去預測 <code>The Office</code> 這個美國暢銷影集的某集 IMDB ratings</li>
 </ul>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></code></pre></div>
-<div id="explore-the-data" class="section level3" number="2.2.1">
+<div id="explore-the-data" class="section level3" number="3.2.1">
 <h3>
-<span class="header-section-number">2.2.1</span> Explore the data<a class="anchor" aria-label="anchor" href="#explore-the-data"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.1</span> Explore the data<a class="anchor" aria-label="anchor" href="#explore-the-data"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># ratings_raw &lt;- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-03-17/office_ratings.csv")</span>
 <span class="co"># </span>
 <span class="co"># remove_regex = "[:punct:]|[:digit:]|parts |part |the |and"</span>
@@ -184,11 +185,11 @@
 </li>
 <li>整體看一下，有沒有 missing，以及分佈的狀況：</li>
 </ul>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">skimr</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/skimr/reference/skim.html">skim</a></span><span class="op">(</span><span class="va">office</span><span class="op">)</span></code></pre></div>
 <div class="inline-table"><table class="table table-sm">
 <caption>
-<span id="tab:unnamed-chunk-3">Table 2.1: </span>Data summary</caption>
+<span id="tab:unnamed-chunk-3">Table 3.1: </span>Data summary</caption>
 <tbody>
 <tr class="odd">
 <td align="left">Name</td>
@@ -677,7 +678,7 @@
 </li>
 <li>這邊再做一個 EDA ，看看 episode 和 rating有沒有關係 (是不是每一季越到後面的集數，rating會越高？)</li>
 </ul>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">office</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">episode</span>, <span class="va">imdb_rating</span>, fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">episode</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span>show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
@@ -686,15 +687,15 @@
 <li>看起來的確有這個趨勢啊！</li>
 </ul>
 </div>
-<div id="train-a-model" class="section level3" number="2.2.2">
+<div id="train-a-model" class="section level3" number="3.2.2">
 <h3>
-<span class="header-section-number">2.2.2</span> Train a model<a class="anchor" aria-label="anchor" href="#train-a-model"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2</span> Train a model<a class="anchor" aria-label="anchor" href="#train-a-model"><i class="fas fa-link"></i></a>
 </h3>
-<div id="split-data" class="section level4" number="2.2.2.1">
+<div id="split-data" class="section level4" number="3.2.2.1">
 <h4>
-<span class="header-section-number">2.2.2.1</span> split data<a class="anchor" aria-label="anchor" href="#split-data"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.1</span> split data<a class="anchor" aria-label="anchor" href="#split-data"><i class="fas fa-link"></i></a>
 </h4>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rsample.tidymodels.org">rsample</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">office_split</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">initial_split</a></span><span class="op">(</span><span class="va">office</span>, strata <span class="op">=</span> <span class="va">season</span><span class="op">)</span>
@@ -705,22 +706,22 @@
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span>
 <span class="va">office_boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/bootstraps.html">bootstraps</a></span><span class="op">(</span><span class="va">office_train</span>, strata <span class="op">=</span> <span class="va">season</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="preprocessing" class="section level4" number="2.2.2.2">
+<div id="preprocessing" class="section level4" number="3.2.2.2">
 <h4>
-<span class="header-section-number">2.2.2.2</span> preprocessing<a class="anchor" aria-label="anchor" href="#preprocessing"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.2</span> preprocessing<a class="anchor" aria-label="anchor" href="#preprocessing"><i class="fas fa-link"></i></a>
 </h4>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes">recipes</a></span><span class="op">)</span>
 <span class="va">office_rec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">imdb_rating</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">office_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://recipes.tidymodels.org/reference/roles.html">update_role</a></span><span class="op">(</span><span class="va">episode_name</span>, new_role <span class="op">=</span> <span class="st">"ID"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># episode 不把他當 predictor</span>
   <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># zero variance 對 回歸問題都會造成影響</span>
   <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># lasso 需要做 normalize</span></code></pre></div>
 </div>
-<div id="specify-model" class="section level4" number="2.2.2.3">
+<div id="specify-model" class="section level4" number="3.2.2.3">
 <h4>
-<span class="header-section-number">2.2.2.3</span> specify model<a class="anchor" aria-label="anchor" href="#specify-model"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.3</span> specify model<a class="anchor" aria-label="anchor" href="#specify-model"><i class="fas fa-link"></i></a>
 </h4>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://parsnip.tidymodels.org">parsnip</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/tune">tune</a></span><span class="op">)</span>
 <span class="va">lasso_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/linear_reg.html">linear_reg</a></span><span class="op">(</span>penalty <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, mixture <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -729,11 +730,11 @@
 <li>可以看到，訂 model 的時候，我 specify 他的 penalty 要用 tuning 的，然後 mixture設為1 (就會是 lasso)</li>
 </ul>
 </div>
-<div id="workflow-setting" class="section level4" number="2.2.2.4">
+<div id="workflow-setting" class="section level4" number="3.2.2.4">
 <h4>
-<span class="header-section-number">2.2.2.4</span> workflow setting<a class="anchor" aria-label="anchor" href="#workflow-setting"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.4</span> workflow setting<a class="anchor" aria-label="anchor" href="#workflow-setting"><i class="fas fa-link"></i></a>
 </h4>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflows">workflows</a></span><span class="op">)</span>
 <span class="va">lasso_wf</span> <span class="op">=</span> <span class="fu"><a href="https://workflows.tidymodels.org//reference/workflow.html">workflow</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://workflows.tidymodels.org//reference/add_recipe.html">add_recipe</a></span><span class="op">(</span><span class="va">office_rec</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -759,11 +760,11 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Computational engine: glmnet</span></code></pre></div>
 </div>
-<div id="hyper-parameter-setting" class="section level4" number="2.2.2.5">
+<div id="hyper-parameter-setting" class="section level4" number="3.2.2.5">
 <h4>
-<span class="header-section-number">2.2.2.5</span> hyper parameter setting<a class="anchor" aria-label="anchor" href="#hyper-parameter-setting"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.5</span> hyper parameter setting<a class="anchor" aria-label="anchor" href="#hyper-parameter-setting"><i class="fas fa-link"></i></a>
 </h4>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dials.tidymodels.org">dials</a></span><span class="op">)</span>
 <span class="va">hyper_param_meta</span> <span class="op">=</span> <span class="va">lasso_spec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dials.tidymodels.org/reference/parameters.html">parameters</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -785,7 +786,7 @@
 </li>
 <li>我們可以這樣看到他的 range，是在 log10 的尺度下，從 -10 到 0</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">hyper_param_meta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dials.tidymodels.org/reference/pull_dials_object.html">pull_dials_object</a></span><span class="op">(</span><span class="st">"penalty"</span><span class="op">)</span>
 <span class="co">#&gt; Amount of Regularization (quantitative)</span>
@@ -794,7 +795,7 @@
 <ul>
 <li>我想用 latin_hypercube，幫他在 feature space 中均勻撒 50 個點</li>
 </ul>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">my_grid</span> <span class="op">=</span> <span class="fu"><a href="https://dials.tidymodels.org/reference/grid_max_entropy.html">grid_latin_hypercube</a></span><span class="op">(</span><span class="va">hyper_param_meta</span>, size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>
 <span class="va">my_grid</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">penalty</span><span class="op">)</span>
@@ -813,15 +814,15 @@
 <span class="co">#&gt; 10 9.39e- 9</span>
 <span class="co">#&gt; # … with 40 more rows</span></code></pre></div>
 </div>
-<div id="model-fitting" class="section level4" number="2.2.2.6">
+<div id="model-fitting" class="section level4" number="3.2.2.6">
 <h4>
-<span class="header-section-number">2.2.2.6</span> model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.6</span> model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"><i class="fas fa-link"></i></a>
 </h4>
-<div id="tune-hyper-parameter" class="section level5" number="2.2.2.6.1">
+<div id="tune-hyper-parameter" class="section level5" number="3.2.2.6.1">
 <h5>
-<span class="header-section-number">2.2.2.6.1</span> tune hyper parameter<a class="anchor" aria-label="anchor" href="#tune-hyper-parameter"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.6.1</span> tune hyper parameter<a class="anchor" aria-label="anchor" href="#tune-hyper-parameter"><i class="fas fa-link"></i></a>
 </h5>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 開平行運算</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">doParallel</span><span class="op">)</span>
 <span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html">makePSOCKcluster</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span> <span class="co"># Create a cluster object</span>
@@ -844,7 +845,7 @@
 <ul>
 <li>看一下 tune 完後，最佳的 penalty 訂為多少</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">final_param</span> <span class="op">=</span> <span class="va">lasso_tune</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">select_best</a></span><span class="op">(</span>metric <span class="op">=</span> <span class="st">"rmse"</span>, maximize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="va">final_param</span>
 <span class="co">#&gt; # A tibble: 1 × 2</span>
@@ -856,7 +857,7 @@
 </li>
 <li>來看一下 tunning 的過程：</li>
 </ul>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">lasso_tune</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">penalty</span>, y <span class="op">=</span> <span class="va">mean</span>, color <span class="op">=</span> <span class="va">.metric</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -876,26 +877,26 @@
 </ul>
 </div>
 </div>
-<div id="finalize-workflow-model" class="section level4" number="2.2.2.7">
+<div id="finalize-workflow-model" class="section level4" number="3.2.2.7">
 <h4>
-<span class="header-section-number">2.2.2.7</span> finalize workflow &amp; model<a class="anchor" aria-label="anchor" href="#finalize-workflow-model"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.2.7</span> finalize workflow &amp; model<a class="anchor" aria-label="anchor" href="#finalize-workflow-model"><i class="fas fa-link"></i></a>
 </h4>
 <ul>
 <li>最後，用這組最佳參數，去 finalize 我們的 model</li>
 </ul>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">final_lasso_wf</span> <span class="op">=</span> <span class="va">lasso_wf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://tune.tidymodels.org/reference/finalize_model.html">finalize_workflow</a></span><span class="op">(</span><span class="va">final_param</span><span class="op">)</span> <span class="co"># finalized workflow</span>
 <span class="va">final_lasso_fit</span> <span class="op">&lt;-</span> <span class="va">final_lasso_wf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">office_train</span><span class="op">)</span> <span class="co"># finalized model</span></code></pre></div>
 </div>
 </div>
-<div id="prediction" class="section level3" number="2.2.3">
+<div id="prediction" class="section level3" number="3.2.3">
 <h3>
-<span class="header-section-number">2.2.3</span> Prediction<a class="anchor" aria-label="anchor" href="#prediction"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.3</span> Prediction<a class="anchor" aria-label="anchor" href="#prediction"><i class="fas fa-link"></i></a>
 </h3>
 <ul>
 <li>對測試集做預測</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 對測試集做預測</span>
 <span class="va">office_test_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_cols</a></span><span class="op">(</span>
   <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">final_lasso_fit</span>, <span class="va">office_test</span><span class="op">)</span>, <span class="co"># 預測值</span>
@@ -917,11 +918,11 @@
 <span class="co">#&gt; 10  8.31         8.5</span>
 <span class="co">#&gt; # … with 26 more rows</span></code></pre></div>
 </div>
-<div id="evaluation" class="section level3" number="2.2.4">
+<div id="evaluation" class="section level3" number="3.2.4">
 <h3>
-<span class="header-section-number">2.2.4</span> Evaluation<a class="anchor" aria-label="anchor" href="#evaluation"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.4</span> Evaluation<a class="anchor" aria-label="anchor" href="#evaluation"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">office_metrics</span> <span class="op">&lt;-</span> <span class="fu">yardstick</span><span class="fu">::</span><span class="fu"><a href="https://yardstick.tidymodels.org/reference/metric_set.html">metric_set</a></span><span class="op">(</span><span class="va">rmse</span>, <span class="va">rsq</span>, <span class="va">mae</span><span class="op">)</span>
 <span class="fu">office_metrics</span><span class="op">(</span>
   data <span class="op">=</span> <span class="va">office_test_res</span>, 
@@ -938,23 +939,23 @@
 <li>hmm… r-square 實在是差強人意啊～</li>
 </ul>
 </div>
-<div id="explaination" class="section level3" number="2.2.5">
+<div id="explaination" class="section level3" number="3.2.5">
 <h3>
-<span class="header-section-number">2.2.5</span> Explaination<a class="anchor" aria-label="anchor" href="#explaination"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.5</span> Explaination<a class="anchor" aria-label="anchor" href="#explaination"><i class="fas fa-link"></i></a>
 </h3>
-<div id="變數重要性" class="section level4" number="2.2.5.1">
+<div id="變數重要性" class="section level4" number="3.2.5.1">
 <h4>
-<span class="header-section-number">2.2.5.1</span> 變數重要性<a class="anchor" aria-label="anchor" href="#%E8%AE%8A%E6%95%B8%E9%87%8D%E8%A6%81%E6%80%A7"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.5.1</span> 變數重要性<a class="anchor" aria-label="anchor" href="#%E8%AE%8A%E6%95%B8%E9%87%8D%E8%A6%81%E6%80%A7"><i class="fas fa-link"></i></a>
 </h4>
 <ul>
 <li>先來看一下我們 fit 出的 model:</li>
 </ul>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># parsnip model</span>
 <span class="va">parsnip_model</span> <span class="op">=</span> <span class="va">final_lasso_fit</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">office_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://workflows.tidymodels.org//reference/workflow-extractors.html">pull_workflow_fit</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">coef_df</span> <span class="op">=</span> <span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
@@ -979,7 +980,7 @@
 </li>
 <li>通常在處理變數重要性時，都會用 <code>vip</code> 這個 package，因為他還有很多額外功能。</li>
 </ul>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/koalaverse/vip/">vip</a></span><span class="op">)</span>
 <span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu">vip</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/vip/man/vi.html">vi</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">final_param</span><span class="op">$</span><span class="va">penalty</span><span class="op">)</span>
@@ -1001,7 +1002,7 @@
 <li><p>可以看到，結果和剛剛的係數一模一樣。那這邊特別提醒，<code><a href="https://rdrr.io/pkg/vip/man/vi.html">vi()</a></code> 裡面要下 <code>lambda =</code> 這個 argument。我一開始沒有下這個 argument，他就會自動去取最小的lambda值帶入，那就幾乎所有變數的係數都 &gt;0，根本不是我要的。解釋可參考<a href="https://stackoverflow.com/questions/64628970/glmnet-variable-importance-vip-vs-varimp">這裡</a></p></li>
 <li><p>那我們幫這個變數重要性畫圖：</p></li>
 </ul>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu">vip</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/vip/man/vi.html">vi</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">final_param</span><span class="op">$</span><span class="va">penalty</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
@@ -1018,7 +1019,7 @@
 </li>
 <li>那如果要挑出變數給別人看，就 filter 出係數大於 0 的變數就好：</li>
 </ul>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">parsnip_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">!=</span><span class="fl">0</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -1041,28 +1042,28 @@
 <span class="co">#&gt; 13 dwight            0.00592  0.0481</span></code></pre></div>
 </div>
 </div>
-<div id="統計推論" class="section level3" number="2.2.6">
+<div id="統計推論" class="section level3" number="3.2.6">
 <h3>
-<span class="header-section-number">2.2.6</span> 統計推論<a class="anchor" aria-label="anchor" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.6</span> 統計推論<a class="anchor" aria-label="anchor" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><i class="fas fa-link"></i></a>
 </h3>
 <ul>
 <li>如果要做統計推論(哪些變數顯著)，</li>
 </ul>
-<div id="模型細節" class="section level4" number="2.2.6.1">
+<div id="模型細節" class="section level4" number="3.2.6.1">
 <h4>
-<span class="header-section-number">2.2.6.1</span> 模型細節<a class="anchor" aria-label="anchor" href="#%E6%A8%A1%E5%9E%8B%E7%B4%B0%E7%AF%80"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.6.1</span> 模型細節<a class="anchor" aria-label="anchor" href="#%E6%A8%A1%E5%9E%8B%E7%B4%B0%E7%AF%80"><i class="fas fa-link"></i></a>
 </h4>
 <ul>
 <li>如果你想看 glmnet 的模型細節，可以先取出原生 package 的物件：</li>
 </ul>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 原生 package 的物件</span>
 <span class="va">glmnet_model</span> <span class="op">=</span> <span class="va">parsnip_model</span><span class="op">$</span><span class="va">fit</span></code></pre></div>
-<div id="法一用-broom-幫忙-summarise-推薦" class="section level5" number="2.2.6.1.1">
+<div id="法一用-broom-幫忙-summarise-推薦" class="section level5" number="3.2.6.1.1">
 <h5>
-<span class="header-section-number">2.2.6.1.1</span> 法一：用 broom 幫忙 summarise (推薦)<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%B8%80%E7%94%A8-broom-%E5%B9%AB%E5%BF%99-summarise-%E6%8E%A8%E8%96%A6"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.6.1.1</span> 法一：用 broom 幫忙 summarise (推薦)<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%B8%80%E7%94%A8-broom-%E5%B9%AB%E5%BF%99-summarise-%E6%8E%A8%E8%96%A6"><i class="fas fa-link"></i></a>
 </h5>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">glmnet_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>return_zeros <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 1,550 × 5</span>
@@ -1086,7 +1087,7 @@
 </li>
 <li>來畫一下 shrinkage 過程</li>
 </ul>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">tidied</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">glmnet_model</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op">!=</span> <span class="st">"(Intercept)"</span><span class="op">)</span>
 
@@ -1096,11 +1097,11 @@
    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-25-1.png" width="672"></div>
 </div>
-<div id="法二原生-pacage-的做法" class="section level5" number="2.2.6.1.2">
+<div id="法二原生-pacage-的做法" class="section level5" number="3.2.6.1.2">
 <h5>
-<span class="header-section-number">2.2.6.1.2</span> 法二：原生 pacage 的做法<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%BA%8C%E5%8E%9F%E7%94%9F-pacage-%E7%9A%84%E5%81%9A%E6%B3%95"><i class="fas fa-link"></i></a>
+<span class="header-section-number">3.2.6.1.2</span> 法二：原生 pacage 的做法<a class="anchor" aria-label="anchor" href="#%E6%B3%95%E4%BA%8C%E5%8E%9F%E7%94%9F-pacage-%E7%9A%84%E5%81%9A%E6%B3%95"><i class="fas fa-link"></i></a>
 </h5>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">glmnet_model</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Call:  glmnet::glmnet(x = maybe_matrix(x), y = y, family = "gaussian",      alpha = ~1) </span>
@@ -1194,13 +1195,13 @@
 </li>
 <li>如果想看各個變數 shrinkage 的過程，快速的方法可以這樣做：</li>
 </ul>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">glmnet_model</span>, xvar <span class="op">=</span> <span class="st">"lambda"</span>, label <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <div class="inline-figure"><img src="ch1_2_glmnet_files/figure-html/unnamed-chunk-27-1.png" width="672"></div>
 <ul>
 <li>如果想畫美美的圖，就去拿原始資料：</li>
 </ul>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">glmnet_model</span><span class="op">$</span><span class="va">beta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -1214,7 +1215,7 @@
 <ul>
 <li>lambda mapping 自己做：</li>
 </ul>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">lambda_mapping</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
   lambda_index <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"s"</span>, <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">glmnet_model</span><span class="op">$</span><span class="va">lambda</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,
   lambda <span class="op">=</span> <span class="va">glmnet_model</span><span class="op">$</span><span class="va">lambda</span>
@@ -1300,7 +1301,7 @@
 <ul>
 <li>然後，自己轉成畫圖用資料：</li>
 </ul>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_for_plot</span> <span class="op">=</span> <span class="va">glmnet_model</span><span class="op">$</span><span class="va">beta</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
@@ -1326,7 +1327,7 @@
 <span class="co">#&gt;  9 kevin               1 -0.0471 0.000225</span>
 <span class="co">#&gt; 10 michael             1  0.186  0.000225</span>
 <span class="co">#&gt; # … with 2,270 more rows</span></code></pre></div>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">df_for_plot</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
   <span class="co">#filter(variable == "season") %&gt;%</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">lambda</span>, y<span class="op">=</span><span class="va">coef</span>, col <span class="op">=</span> <span class="va">variable</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -1341,21 +1342,21 @@
 </div>
 </div>
   <div class="chapter-nav">
-<div class="prev"><a href="linear-model.html"><span class="header-section-number">1</span> Linear Model</a></div>
-<div class="next"><a href="tree.html"><span class="header-section-number">3</span> Tree</a></div>
+<div class="prev"><a href="linear-model-1.html"><span class="header-section-number">2</span> Linear Model</a></div>
+<div class="next"><a href="tree.html"><span class="header-section-number">4</span> Tree</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
     <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
       <ul class="nav navbar-nav">
-<li><a class="nav-link" href="#glmnet"><span class="header-section-number">2</span> glmnet</a></li>
-<li><a class="nav-link" href="#%E7%90%86%E8%AB%96"><span class="header-section-number">2.1</span> 理論</a></li>
+<li><a class="nav-link" href="#glmnet"><span class="header-section-number">3</span> glmnet</a></li>
+<li><a class="nav-link" href="#%E7%90%86%E8%AB%96"><span class="header-section-number">3.1</span> 理論</a></li>
 <li>
-<a class="nav-link" href="#lasso-%E5%AF%A6%E4%BD%9C"><span class="header-section-number">2.2</span> lasso 實作</a><ul class="nav navbar-nav">
-<li><a class="nav-link" href="#explore-the-data"><span class="header-section-number">2.2.1</span> Explore the data</a></li>
-<li><a class="nav-link" href="#train-a-model"><span class="header-section-number">2.2.2</span> Train a model</a></li>
-<li><a class="nav-link" href="#prediction"><span class="header-section-number">2.2.3</span> Prediction</a></li>
-<li><a class="nav-link" href="#evaluation"><span class="header-section-number">2.2.4</span> Evaluation</a></li>
-<li><a class="nav-link" href="#explaination"><span class="header-section-number">2.2.5</span> Explaination</a></li>
-<li><a class="nav-link" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><span class="header-section-number">2.2.6</span> 統計推論</a></li>
+<a class="nav-link" href="#lasso-%E5%AF%A6%E4%BD%9C"><span class="header-section-number">3.2</span> lasso 實作</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#explore-the-data"><span class="header-section-number">3.2.1</span> Explore the data</a></li>
+<li><a class="nav-link" href="#train-a-model"><span class="header-section-number">3.2.2</span> Train a model</a></li>
+<li><a class="nav-link" href="#prediction"><span class="header-section-number">3.2.3</span> Prediction</a></li>
+<li><a class="nav-link" href="#evaluation"><span class="header-section-number">3.2.4</span> Evaluation</a></li>
+<li><a class="nav-link" href="#explaination"><span class="header-section-number">3.2.5</span> Explaination</a></li>
+<li><a class="nav-link" href="#%E7%B5%B1%E8%A8%88%E6%8E%A8%E8%AB%96"><span class="header-section-number">3.2.6</span> 統計推論</a></li>
 </ul>
 </li>
 </ul>
@@ -1375,7 +1376,7 @@
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>ML Cookbook</strong>" was written by Hank Lee. It was last built on 2021-12-25.</p>
+    <p>"<strong>ML Cookbook</strong>" was written by Hank Lee. It was last built on 2022-01-17.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">

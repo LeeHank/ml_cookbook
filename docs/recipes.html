@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 1 Recipes | ML Cookbook</title>
+<meta name="author" content="Hank Lee">
+<meta name="description" content="library(tidyverse) library(recipes) 這張圖很好的解釋了recipe這個package的步驟： specify variables: 這一個步驟，就像寫食譜前，要先標清楚要用哪些食材的意思。 用recipe()來先標清楚各個variable的type和role。type就是numeric/nominal, role就是outcome/predictor...">
+<meta name="generator" content="bookdown 0.24 with bs4_book()">
+<meta property="og:title" content="Chapter 1 Recipes | ML Cookbook">
+<meta property="og:type" content="book">
+<meta property="og:description" content="library(tidyverse) library(recipes) 這張圖很好的解釋了recipe這個package的步驟： specify variables: 這一個步驟，就像寫食譜前，要先標清楚要用哪些食材的意思。 用recipe()來先標清楚各個variable的type和role。type就是numeric/nominal, role就是outcome/predictor...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 1 Recipes | ML Cookbook">
+<meta name="twitter:description" content="library(tidyverse) library(recipes) 這張圖很好的解釋了recipe這個package的步驟： specify variables: 這一個步驟，就像寫食譜前，要先標清楚要用哪些食材的意思。 用recipe()來先標清楚各個variable的type和role。type就是numeric/nominal, role就是outcome/predictor...">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/header-attrs-2.11/header-attrs.js"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><script src="libs/bs3compat-0.3.1/transition.js"></script><script src="libs/bs3compat-0.3.1/tabs.js"></script><script src="libs/bs3compat-0.3.1/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><link rel="stylesheet" href="bs4_style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="">ML Cookbook</a>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">About</a></li>
+<li class="book-part">Preprocess</li>
+<li><a class="active" href="recipes.html"><span class="header-section-number">1</span> Recipes</a></li>
+<li class="book-part">Regression</li>
+<li><a class="" href="linear-model-1.html"><span class="header-section-number">2</span> Linear Model</a></li>
+<li><a class="" href="glmnet.html"><span class="header-section-number">3</span> glmnet</a></li>
+<li><a class="" href="tree.html"><span class="header-section-number">4</span> Tree</a></li>
+<li><a class="" href="random-forest-1.html"><span class="header-section-number">5</span> Random Forest</a></li>
+<li><a class="" href="xgboost-1.html"><span class="header-section-number">6</span> xgboost</a></li>
+<li class="book-part">Binary Classification</li>
+<li><a class="" href="logistic-regression.html"><span class="header-section-number">7</span> Logistic Regression</a></li>
+<li><a class="" href="glmnet-1.html"><span class="header-section-number">8</span> glmnet</a></li>
+<li><a class="" href="random-forest-2.html"><span class="header-section-number">9</span> Random Forest</a></li>
+<li><a class="" href="xgboost-2.html"><span class="header-section-number">10</span> xgboost</a></li>
+<li class="book-part">Multi-Classification</li>
+<li><a class="" href="tree-1.html"><span class="header-section-number">11</span> Tree</a></li>
+<li class="book-part">Dimension Reduction</li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/rstudio/bookdown-demo">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="recipes" class="section level1" number="1">
+<h1>
+<span class="header-section-number">1</span> Recipes<a class="anchor" aria-label="anchor" href="#recipes"><i class="fas fa-link"></i></a>
+</h1>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes">recipes</a></span><span class="op">)</span></code></pre></div>
+<ul>
+<li>這張圖很好的解釋了<code>recipe</code>這個package的步驟：</li>
+</ul>
+<div class="inline-figure"><img src="images/recipes.jpg"></div>
+<ul>
+<li>specify variables:
+<ul>
+<li>這一個步驟，就像寫食譜前，要先標清楚要用哪些食材的意思。<br>
+</li>
+<li>用<code><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe()</a></code>來先標清楚各個variable的type和role。type就是numeric/nominal, role就是outcome/predictor<br>
+</li>
+<li>最簡單的一種寫法，就是這樣： <code>recipe(y~., data = data)</code>。那透過model formula，系統就知道每個欄位的角色了：y是outcome，其他所有欄位都是predictor。而放進去的data，只是讓系統去知道，每個欄位的type是什麼：factor/character會被判定為nominal, integer/numeric會被判定為numeric。<br>
+</li>
+<li>對於每個欄位的type和role，都還可以微調，這等等再細講<br>
+</li>
+</ul>
+</li>
+<li>define pre-processing steps:
+<ul>
+<li>這一步驟，就是在寫食譜。把做一道菜的每一個步驟寫好<br>
+</li>
+<li>用一堆<code>step_*</code> function，來說明to-do事項有哪些。例如我要做one-hot encoding、我要補遺漏值、我要做normalize…<br>
+</li>
+<li>舉例來說，<code>step_log(total_time, base = 10)</code>，就表示我要對total_time這個欄位取log</li>
+</ul>
+</li>
+<li>provide datasets for recipe steps:
+<ul>
+<li>這一步驟，就是做菜前要先備料，的備料階段。<br>
+</li>
+<li>用<code><a href="https://recipes.tidymodels.org/reference/prep.html">prep()</a></code> function，來prepare所需的材料(例如你要做one-hot encoding時，那個factor的levels到底有哪些？要做normalize時，你的mean和sd要給多少？你要給我一份實際的資料我才知道，這邊通常都是丟training data進去)<br>
+</li>
+</ul>
+</li>
+<li>apply pre-processing:
+<ul>
+<li>這一步驟，就是實際來做菜了。<br>
+</li>
+<li>用<code><a href="https://recipes.tidymodels.org/reference/bake.html">bake()</a></code>來實際對給定的資料做preprocessing</li>
+</ul>
+</li>
+</ul>
+<div id="先快速來個例子" class="section level2" number="1.1">
+<h2>
+<span class="header-section-number">1.1</span> 先快速來個例子<a class="anchor" aria-label="anchor" href="#%E5%85%88%E5%BF%AB%E9%80%9F%E4%BE%86%E5%80%8B%E4%BE%8B%E5%AD%90"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>舉例來說，我有一筆 iris data，我先切成training/testing:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rsample.tidymodels.org">rsample</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
+<span class="va">iris_split</span> <span class="op">=</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">initial_split</a></span><span class="op">(</span><span class="va">iris</span>, strata <span class="op">=</span> <span class="va">Species</span><span class="op">)</span>
+<span class="va">iris_train</span> <span class="op">=</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">training</a></span><span class="op">(</span><span class="va">iris_split</span><span class="op">)</span>
+<span class="va">iris_test</span> <span class="op">=</span> <span class="fu"><a href="https://rsample.tidymodels.org/reference/initial_split.html">testing</a></span><span class="op">(</span><span class="va">iris_split</span><span class="op">)</span>
+<span class="va">iris_train</span>
+<span class="co">#&gt;     Sepal.Length Sepal.Width Petal.Length Petal.Width</span>
+<span class="co">#&gt; 3            4.7         3.2          1.3         0.2</span>
+<span class="co">#&gt; 4            4.6         3.1          1.5         0.2</span>
+<span class="co">#&gt; 5            5.0         3.6          1.4         0.2</span>
+<span class="co">#&gt; 7            4.6         3.4          1.4         0.3</span>
+<span class="co">#&gt; 8            5.0         3.4          1.5         0.2</span>
+<span class="co">#&gt; 9            4.4         2.9          1.4         0.2</span>
+<span class="co">#&gt; 10           4.9         3.1          1.5         0.1</span>
+<span class="co">#&gt; 11           5.4         3.7          1.5         0.2</span>
+<span class="co">#&gt; 12           4.8         3.4          1.6         0.2</span>
+<span class="co">#&gt; 13           4.8         3.0          1.4         0.1</span>
+<span class="co">#&gt; 14           4.3         3.0          1.1         0.1</span>
+<span class="co">#&gt; 15           5.8         4.0          1.2         0.2</span>
+<span class="co">#&gt; 17           5.4         3.9          1.3         0.4</span>
+<span class="co">#&gt; 18           5.1         3.5          1.4         0.3</span>
+<span class="co">#&gt; 19           5.7         3.8          1.7         0.3</span>
+<span class="co">#&gt; 20           5.1         3.8          1.5         0.3</span>
+<span class="co">#&gt; 21           5.4         3.4          1.7         0.2</span>
+<span class="co">#&gt; 24           5.1         3.3          1.7         0.5</span>
+<span class="co">#&gt; 25           4.8         3.4          1.9         0.2</span>
+<span class="co">#&gt; 26           5.0         3.0          1.6         0.2</span>
+<span class="co">#&gt; 27           5.0         3.4          1.6         0.4</span>
+<span class="co">#&gt; 28           5.2         3.5          1.5         0.2</span>
+<span class="co">#&gt; 29           5.2         3.4          1.4         0.2</span>
+<span class="co">#&gt; 30           4.7         3.2          1.6         0.2</span>
+<span class="co">#&gt; 31           4.8         3.1          1.6         0.2</span>
+<span class="co">#&gt; 32           5.4         3.4          1.5         0.4</span>
+<span class="co">#&gt; 33           5.2         4.1          1.5         0.1</span>
+<span class="co">#&gt; 36           5.0         3.2          1.2         0.2</span>
+<span class="co">#&gt; 37           5.5         3.5          1.3         0.2</span>
+<span class="co">#&gt; 40           5.1         3.4          1.5         0.2</span>
+<span class="co">#&gt; 41           5.0         3.5          1.3         0.3</span>
+<span class="co">#&gt; 42           4.5         2.3          1.3         0.3</span>
+<span class="co">#&gt; 43           4.4         3.2          1.3         0.2</span>
+<span class="co">#&gt; 45           5.1         3.8          1.9         0.4</span>
+<span class="co">#&gt; 48           4.6         3.2          1.4         0.2</span>
+<span class="co">#&gt; 49           5.3         3.7          1.5         0.2</span>
+<span class="co">#&gt; 50           5.0         3.3          1.4         0.2</span>
+<span class="co">#&gt; 52           6.4         3.2          4.5         1.5</span>
+<span class="co">#&gt; 54           5.5         2.3          4.0         1.3</span>
+<span class="co">#&gt; 55           6.5         2.8          4.6         1.5</span>
+<span class="co">#&gt; 56           5.7         2.8          4.5         1.3</span>
+<span class="co">#&gt; 57           6.3         3.3          4.7         1.6</span>
+<span class="co">#&gt; 58           4.9         2.4          3.3         1.0</span>
+<span class="co">#&gt; 59           6.6         2.9          4.6         1.3</span>
+<span class="co">#&gt; 61           5.0         2.0          3.5         1.0</span>
+<span class="co">#&gt; 62           5.9         3.0          4.2         1.5</span>
+<span class="co">#&gt; 63           6.0         2.2          4.0         1.0</span>
+<span class="co">#&gt; 65           5.6         2.9          3.6         1.3</span>
+<span class="co">#&gt; 66           6.7         3.1          4.4         1.4</span>
+<span class="co">#&gt; 67           5.6         3.0          4.5         1.5</span>
+<span class="co">#&gt; 68           5.8         2.7          4.1         1.0</span>
+<span class="co">#&gt; 69           6.2         2.2          4.5         1.5</span>
+<span class="co">#&gt; 70           5.6         2.5          3.9         1.1</span>
+<span class="co">#&gt; 71           5.9         3.2          4.8         1.8</span>
+<span class="co">#&gt; 72           6.1         2.8          4.0         1.3</span>
+<span class="co">#&gt; 73           6.3         2.5          4.9         1.5</span>
+<span class="co">#&gt; 75           6.4         2.9          4.3         1.3</span>
+<span class="co">#&gt; 76           6.6         3.0          4.4         1.4</span>
+<span class="co">#&gt; 77           6.8         2.8          4.8         1.4</span>
+<span class="co">#&gt; 78           6.7         3.0          5.0         1.7</span>
+<span class="co">#&gt; 79           6.0         2.9          4.5         1.5</span>
+<span class="co">#&gt; 82           5.5         2.4          3.7         1.0</span>
+<span class="co">#&gt; 83           5.8         2.7          3.9         1.2</span>
+<span class="co">#&gt; 84           6.0         2.7          5.1         1.6</span>
+<span class="co">#&gt; 87           6.7         3.1          4.7         1.5</span>
+<span class="co">#&gt; 88           6.3         2.3          4.4         1.3</span>
+<span class="co">#&gt; 89           5.6         3.0          4.1         1.3</span>
+<span class="co">#&gt; 91           5.5         2.6          4.4         1.2</span>
+<span class="co">#&gt; 93           5.8         2.6          4.0         1.2</span>
+<span class="co">#&gt; 95           5.6         2.7          4.2         1.3</span>
+<span class="co">#&gt; 96           5.7         3.0          4.2         1.2</span>
+<span class="co">#&gt; 98           6.2         2.9          4.3         1.3</span>
+<span class="co">#&gt; 99           5.1         2.5          3.0         1.1</span>
+<span class="co">#&gt; 100          5.7         2.8          4.1         1.3</span>
+<span class="co">#&gt; 101          6.3         3.3          6.0         2.5</span>
+<span class="co">#&gt; 102          5.8         2.7          5.1         1.9</span>
+<span class="co">#&gt; 103          7.1         3.0          5.9         2.1</span>
+<span class="co">#&gt; 104          6.3         2.9          5.6         1.8</span>
+<span class="co">#&gt; 105          6.5         3.0          5.8         2.2</span>
+<span class="co">#&gt; 107          4.9         2.5          4.5         1.7</span>
+<span class="co">#&gt; 108          7.3         2.9          6.3         1.8</span>
+<span class="co">#&gt; 110          7.2         3.6          6.1         2.5</span>
+<span class="co">#&gt; 112          6.4         2.7          5.3         1.9</span>
+<span class="co">#&gt; 114          5.7         2.5          5.0         2.0</span>
+<span class="co">#&gt; 115          5.8         2.8          5.1         2.4</span>
+<span class="co">#&gt; 118          7.7         3.8          6.7         2.2</span>
+<span class="co">#&gt; 119          7.7         2.6          6.9         2.3</span>
+<span class="co">#&gt; 120          6.0         2.2          5.0         1.5</span>
+<span class="co">#&gt; 121          6.9         3.2          5.7         2.3</span>
+<span class="co">#&gt; 122          5.6         2.8          4.9         2.0</span>
+<span class="co">#&gt; 123          7.7         2.8          6.7         2.0</span>
+<span class="co">#&gt; 125          6.7         3.3          5.7         2.1</span>
+<span class="co">#&gt; 126          7.2         3.2          6.0         1.8</span>
+<span class="co">#&gt; 127          6.2         2.8          4.8         1.8</span>
+<span class="co">#&gt; 129          6.4         2.8          5.6         2.1</span>
+<span class="co">#&gt; 130          7.2         3.0          5.8         1.6</span>
+<span class="co">#&gt; 131          7.4         2.8          6.1         1.9</span>
+<span class="co">#&gt; 132          7.9         3.8          6.4         2.0</span>
+<span class="co">#&gt; 135          6.1         2.6          5.6         1.4</span>
+<span class="co">#&gt; 136          7.7         3.0          6.1         2.3</span>
+<span class="co">#&gt; 139          6.0         3.0          4.8         1.8</span>
+<span class="co">#&gt; 140          6.9         3.1          5.4         2.1</span>
+<span class="co">#&gt; 141          6.7         3.1          5.6         2.4</span>
+<span class="co">#&gt; 142          6.9         3.1          5.1         2.3</span>
+<span class="co">#&gt; 143          5.8         2.7          5.1         1.9</span>
+<span class="co">#&gt; 144          6.8         3.2          5.9         2.3</span>
+<span class="co">#&gt; 146          6.7         3.0          5.2         2.3</span>
+<span class="co">#&gt; 147          6.3         2.5          5.0         1.9</span>
+<span class="co">#&gt; 148          6.5         3.0          5.2         2.0</span>
+<span class="co">#&gt; 149          6.2         3.4          5.4         2.3</span>
+<span class="co">#&gt; 150          5.9         3.0          5.1         1.8</span>
+<span class="co">#&gt;        Species</span>
+<span class="co">#&gt; 3       setosa</span>
+<span class="co">#&gt; 4       setosa</span>
+<span class="co">#&gt; 5       setosa</span>
+<span class="co">#&gt; 7       setosa</span>
+<span class="co">#&gt; 8       setosa</span>
+<span class="co">#&gt; 9       setosa</span>
+<span class="co">#&gt; 10      setosa</span>
+<span class="co">#&gt; 11      setosa</span>
+<span class="co">#&gt; 12      setosa</span>
+<span class="co">#&gt; 13      setosa</span>
+<span class="co">#&gt; 14      setosa</span>
+<span class="co">#&gt; 15      setosa</span>
+<span class="co">#&gt; 17      setosa</span>
+<span class="co">#&gt; 18      setosa</span>
+<span class="co">#&gt; 19      setosa</span>
+<span class="co">#&gt; 20      setosa</span>
+<span class="co">#&gt; 21      setosa</span>
+<span class="co">#&gt; 24      setosa</span>
+<span class="co">#&gt; 25      setosa</span>
+<span class="co">#&gt; 26      setosa</span>
+<span class="co">#&gt; 27      setosa</span>
+<span class="co">#&gt; 28      setosa</span>
+<span class="co">#&gt; 29      setosa</span>
+<span class="co">#&gt; 30      setosa</span>
+<span class="co">#&gt; 31      setosa</span>
+<span class="co">#&gt; 32      setosa</span>
+<span class="co">#&gt; 33      setosa</span>
+<span class="co">#&gt; 36      setosa</span>
+<span class="co">#&gt; 37      setosa</span>
+<span class="co">#&gt; 40      setosa</span>
+<span class="co">#&gt; 41      setosa</span>
+<span class="co">#&gt; 42      setosa</span>
+<span class="co">#&gt; 43      setosa</span>
+<span class="co">#&gt; 45      setosa</span>
+<span class="co">#&gt; 48      setosa</span>
+<span class="co">#&gt; 49      setosa</span>
+<span class="co">#&gt; 50      setosa</span>
+<span class="co">#&gt; 52  versicolor</span>
+<span class="co">#&gt; 54  versicolor</span>
+<span class="co">#&gt; 55  versicolor</span>
+<span class="co">#&gt; 56  versicolor</span>
+<span class="co">#&gt; 57  versicolor</span>
+<span class="co">#&gt; 58  versicolor</span>
+<span class="co">#&gt; 59  versicolor</span>
+<span class="co">#&gt; 61  versicolor</span>
+<span class="co">#&gt; 62  versicolor</span>
+<span class="co">#&gt; 63  versicolor</span>
+<span class="co">#&gt; 65  versicolor</span>
+<span class="co">#&gt; 66  versicolor</span>
+<span class="co">#&gt; 67  versicolor</span>
+<span class="co">#&gt; 68  versicolor</span>
+<span class="co">#&gt; 69  versicolor</span>
+<span class="co">#&gt; 70  versicolor</span>
+<span class="co">#&gt; 71  versicolor</span>
+<span class="co">#&gt; 72  versicolor</span>
+<span class="co">#&gt; 73  versicolor</span>
+<span class="co">#&gt; 75  versicolor</span>
+<span class="co">#&gt; 76  versicolor</span>
+<span class="co">#&gt; 77  versicolor</span>
+<span class="co">#&gt; 78  versicolor</span>
+<span class="co">#&gt; 79  versicolor</span>
+<span class="co">#&gt; 82  versicolor</span>
+<span class="co">#&gt; 83  versicolor</span>
+<span class="co">#&gt; 84  versicolor</span>
+<span class="co">#&gt; 87  versicolor</span>
+<span class="co">#&gt; 88  versicolor</span>
+<span class="co">#&gt; 89  versicolor</span>
+<span class="co">#&gt; 91  versicolor</span>
+<span class="co">#&gt; 93  versicolor</span>
+<span class="co">#&gt; 95  versicolor</span>
+<span class="co">#&gt; 96  versicolor</span>
+<span class="co">#&gt; 98  versicolor</span>
+<span class="co">#&gt; 99  versicolor</span>
+<span class="co">#&gt; 100 versicolor</span>
+<span class="co">#&gt; 101  virginica</span>
+<span class="co">#&gt; 102  virginica</span>
+<span class="co">#&gt; 103  virginica</span>
+<span class="co">#&gt; 104  virginica</span>
+<span class="co">#&gt; 105  virginica</span>
+<span class="co">#&gt; 107  virginica</span>
+<span class="co">#&gt; 108  virginica</span>
+<span class="co">#&gt; 110  virginica</span>
+<span class="co">#&gt; 112  virginica</span>
+<span class="co">#&gt; 114  virginica</span>
+<span class="co">#&gt; 115  virginica</span>
+<span class="co">#&gt; 118  virginica</span>
+<span class="co">#&gt; 119  virginica</span>
+<span class="co">#&gt; 120  virginica</span>
+<span class="co">#&gt; 121  virginica</span>
+<span class="co">#&gt; 122  virginica</span>
+<span class="co">#&gt; 123  virginica</span>
+<span class="co">#&gt; 125  virginica</span>
+<span class="co">#&gt; 126  virginica</span>
+<span class="co">#&gt; 127  virginica</span>
+<span class="co">#&gt; 129  virginica</span>
+<span class="co">#&gt; 130  virginica</span>
+<span class="co">#&gt; 131  virginica</span>
+<span class="co">#&gt; 132  virginica</span>
+<span class="co">#&gt; 135  virginica</span>
+<span class="co">#&gt; 136  virginica</span>
+<span class="co">#&gt; 139  virginica</span>
+<span class="co">#&gt; 140  virginica</span>
+<span class="co">#&gt; 141  virginica</span>
+<span class="co">#&gt; 142  virginica</span>
+<span class="co">#&gt; 143  virginica</span>
+<span class="co">#&gt; 144  virginica</span>
+<span class="co">#&gt; 146  virginica</span>
+<span class="co">#&gt; 147  virginica</span>
+<span class="co">#&gt; 148  virginica</span>
+<span class="co">#&gt; 149  virginica</span>
+<span class="co">#&gt; 150  virginica</span></code></pre></div>
+<ul>
+<li>那從這筆資料，就可發現有5個變數，其中4個是連續型，一個是類別型<br>
+</li>
+<li>那我用 <code>recipe(Species ~., data = iris_train)</code> ，就可定義好這些變數的 type 和 role：</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_recipe</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal outcome   original</span></code></pre></div>
+<ul>
+<li>可以看到，藉由 <code>data = iris_train</code>，這個recipe物件就可以知道variable有哪 5 個，然後從這5個變數在此data中的型別，就可以得知他的type。<br>
+</li>
+<li>接著，formula: <code>Species ~ .</code>，這個recipe物件就可以知道Species的role是outcome，而其他都是predictor</li>
+<li>特別提醒：
+<ul>
+<li>這邊的formula，不是最後我們要fit model所用的formula。這個formula只是為了定義出各個變數的角色而已。<br>
+</li>
+<li>這邊的data，也不是我們要fit model所用的data。這邊的data只是讓我知道總共有哪些變數，各個變數的type是什麼而已。所以這邊你要放iris_train, iris_test, iris, 甚至cv的data， 都隨便你，只要這個data裡有你想specify的變數，且這個data各個變數的type都是正確的就好。</li>
+</ul>
+</li>
+<li>接下來看第二步驟，我想把type = numeric 的變數，都做normalize:</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+
+<span class="va">iris_recipe</span>
+<span class="co">#&gt; Recipe</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Inputs:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;       role #variables</span>
+<span class="co">#&gt;    outcome          1</span>
+<span class="co">#&gt;  predictor          4</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Operations:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Centering and scaling for all_numeric()</span></code></pre></div>
+<ul>
+<li>可以看到Operations裡面，寫了Centering and scaling for all_numeric()<br>
+</li>
+<li>接下來，我要prepare我的資料了。我在prep裡面，放入iris_train。那normalize的mean和sd，就都會根據iris_train來計算出來</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_rec_prep</span> <span class="op">&lt;-</span> <span class="va">iris_recipe</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span></code></pre></div>
+<ul>
+<li>最後，應用到testing set</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_rec_prep</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">iris_test</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 39 × 5</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width Species</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  </span>
+<span class="co">#&gt;  1       -0.886      1.11          -1.33       -1.30 setosa </span>
+<span class="co">#&gt;  2       -1.12      -0.0744        -1.33       -1.30 setosa </span>
+<span class="co">#&gt;  3       -0.534      2.05          -1.17       -1.04 setosa </span>
+<span class="co">#&gt;  4       -0.182      3.23          -1.28       -1.04 setosa </span>
+<span class="co">#&gt;  5       -0.886      1.58          -1.28       -1.04 setosa </span>
+<span class="co">#&gt;  6       -1.47       1.34          -1.56       -1.30 setosa </span>
+<span class="co">#&gt;  7       -0.417      2.76          -1.33       -1.30 setosa </span>
+<span class="co">#&gt;  8       -1.12       0.162         -1.28       -1.30 setosa </span>
+<span class="co">#&gt;  9       -1.12       1.34          -1.33       -1.43 setosa </span>
+<span class="co">#&gt; 10       -1.71      -0.0744        -1.39       -1.30 setosa </span>
+<span class="co">#&gt; # … with 29 more rows</span></code></pre></div>
+<ul>
+<li>接下來各章，就要來講細節</li>
+</ul>
+</div>
+<div id="specify-variables" class="section level2" number="1.2">
+<h2>
+<span class="header-section-number">1.2</span> Specify Variables<a class="anchor" aria-label="anchor" href="#specify-variables"><i class="fas fa-link"></i></a>
+</h2>
+<div id="定義各個變數的-type-和-role" class="section level3" number="1.2.1">
+<h3>
+<span class="header-section-number">1.2.1</span> 定義各個變數的 type 和 role<a class="anchor" aria-label="anchor" href="#%E5%AE%9A%E7%BE%A9%E5%90%84%E5%80%8B%E8%AE%8A%E6%95%B8%E7%9A%84-type-%E5%92%8C-role"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>這一步其實就像是資料庫裡面給schema or meta-data 的感覺，我們要去定義每個變數的：
+<ul>
+<li>type: 這個變數的type是nominal or continuous<br>
+</li>
+<li>role: 這個變數的角色是 predictor or response<br>
+</li>
+</ul>
+</li>
+<li>那最簡單的寫法，就是給他 formula + 一組資料，這樣就能快速的搞定每個variable的type和role。<br>
+</li>
+<li>舉例來說，我有一筆 iris data:</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris</span>
+<span class="co">#&gt;     Sepal.Length Sepal.Width Petal.Length Petal.Width</span>
+<span class="co">#&gt; 1            5.1         3.5          1.4         0.2</span>
+<span class="co">#&gt; 2            4.9         3.0          1.4         0.2</span>
+<span class="co">#&gt; 3            4.7         3.2          1.3         0.2</span>
+<span class="co">#&gt; 4            4.6         3.1          1.5         0.2</span>
+<span class="co">#&gt; 5            5.0         3.6          1.4         0.2</span>
+<span class="co">#&gt; 6            5.4         3.9          1.7         0.4</span>
+<span class="co">#&gt; 7            4.6         3.4          1.4         0.3</span>
+<span class="co">#&gt; 8            5.0         3.4          1.5         0.2</span>
+<span class="co">#&gt; 9            4.4         2.9          1.4         0.2</span>
+<span class="co">#&gt; 10           4.9         3.1          1.5         0.1</span>
+<span class="co">#&gt; 11           5.4         3.7          1.5         0.2</span>
+<span class="co">#&gt; 12           4.8         3.4          1.6         0.2</span>
+<span class="co">#&gt; 13           4.8         3.0          1.4         0.1</span>
+<span class="co">#&gt; 14           4.3         3.0          1.1         0.1</span>
+<span class="co">#&gt; 15           5.8         4.0          1.2         0.2</span>
+<span class="co">#&gt; 16           5.7         4.4          1.5         0.4</span>
+<span class="co">#&gt; 17           5.4         3.9          1.3         0.4</span>
+<span class="co">#&gt; 18           5.1         3.5          1.4         0.3</span>
+<span class="co">#&gt; 19           5.7         3.8          1.7         0.3</span>
+<span class="co">#&gt; 20           5.1         3.8          1.5         0.3</span>
+<span class="co">#&gt; 21           5.4         3.4          1.7         0.2</span>
+<span class="co">#&gt; 22           5.1         3.7          1.5         0.4</span>
+<span class="co">#&gt; 23           4.6         3.6          1.0         0.2</span>
+<span class="co">#&gt; 24           5.1         3.3          1.7         0.5</span>
+<span class="co">#&gt; 25           4.8         3.4          1.9         0.2</span>
+<span class="co">#&gt; 26           5.0         3.0          1.6         0.2</span>
+<span class="co">#&gt; 27           5.0         3.4          1.6         0.4</span>
+<span class="co">#&gt; 28           5.2         3.5          1.5         0.2</span>
+<span class="co">#&gt; 29           5.2         3.4          1.4         0.2</span>
+<span class="co">#&gt; 30           4.7         3.2          1.6         0.2</span>
+<span class="co">#&gt; 31           4.8         3.1          1.6         0.2</span>
+<span class="co">#&gt; 32           5.4         3.4          1.5         0.4</span>
+<span class="co">#&gt; 33           5.2         4.1          1.5         0.1</span>
+<span class="co">#&gt; 34           5.5         4.2          1.4         0.2</span>
+<span class="co">#&gt; 35           4.9         3.1          1.5         0.2</span>
+<span class="co">#&gt; 36           5.0         3.2          1.2         0.2</span>
+<span class="co">#&gt; 37           5.5         3.5          1.3         0.2</span>
+<span class="co">#&gt; 38           4.9         3.6          1.4         0.1</span>
+<span class="co">#&gt; 39           4.4         3.0          1.3         0.2</span>
+<span class="co">#&gt; 40           5.1         3.4          1.5         0.2</span>
+<span class="co">#&gt; 41           5.0         3.5          1.3         0.3</span>
+<span class="co">#&gt; 42           4.5         2.3          1.3         0.3</span>
+<span class="co">#&gt; 43           4.4         3.2          1.3         0.2</span>
+<span class="co">#&gt; 44           5.0         3.5          1.6         0.6</span>
+<span class="co">#&gt; 45           5.1         3.8          1.9         0.4</span>
+<span class="co">#&gt; 46           4.8         3.0          1.4         0.3</span>
+<span class="co">#&gt; 47           5.1         3.8          1.6         0.2</span>
+<span class="co">#&gt; 48           4.6         3.2          1.4         0.2</span>
+<span class="co">#&gt; 49           5.3         3.7          1.5         0.2</span>
+<span class="co">#&gt; 50           5.0         3.3          1.4         0.2</span>
+<span class="co">#&gt; 51           7.0         3.2          4.7         1.4</span>
+<span class="co">#&gt; 52           6.4         3.2          4.5         1.5</span>
+<span class="co">#&gt; 53           6.9         3.1          4.9         1.5</span>
+<span class="co">#&gt; 54           5.5         2.3          4.0         1.3</span>
+<span class="co">#&gt; 55           6.5         2.8          4.6         1.5</span>
+<span class="co">#&gt; 56           5.7         2.8          4.5         1.3</span>
+<span class="co">#&gt; 57           6.3         3.3          4.7         1.6</span>
+<span class="co">#&gt; 58           4.9         2.4          3.3         1.0</span>
+<span class="co">#&gt; 59           6.6         2.9          4.6         1.3</span>
+<span class="co">#&gt; 60           5.2         2.7          3.9         1.4</span>
+<span class="co">#&gt; 61           5.0         2.0          3.5         1.0</span>
+<span class="co">#&gt; 62           5.9         3.0          4.2         1.5</span>
+<span class="co">#&gt; 63           6.0         2.2          4.0         1.0</span>
+<span class="co">#&gt; 64           6.1         2.9          4.7         1.4</span>
+<span class="co">#&gt; 65           5.6         2.9          3.6         1.3</span>
+<span class="co">#&gt; 66           6.7         3.1          4.4         1.4</span>
+<span class="co">#&gt; 67           5.6         3.0          4.5         1.5</span>
+<span class="co">#&gt; 68           5.8         2.7          4.1         1.0</span>
+<span class="co">#&gt; 69           6.2         2.2          4.5         1.5</span>
+<span class="co">#&gt; 70           5.6         2.5          3.9         1.1</span>
+<span class="co">#&gt; 71           5.9         3.2          4.8         1.8</span>
+<span class="co">#&gt; 72           6.1         2.8          4.0         1.3</span>
+<span class="co">#&gt; 73           6.3         2.5          4.9         1.5</span>
+<span class="co">#&gt; 74           6.1         2.8          4.7         1.2</span>
+<span class="co">#&gt; 75           6.4         2.9          4.3         1.3</span>
+<span class="co">#&gt; 76           6.6         3.0          4.4         1.4</span>
+<span class="co">#&gt; 77           6.8         2.8          4.8         1.4</span>
+<span class="co">#&gt; 78           6.7         3.0          5.0         1.7</span>
+<span class="co">#&gt; 79           6.0         2.9          4.5         1.5</span>
+<span class="co">#&gt; 80           5.7         2.6          3.5         1.0</span>
+<span class="co">#&gt; 81           5.5         2.4          3.8         1.1</span>
+<span class="co">#&gt; 82           5.5         2.4          3.7         1.0</span>
+<span class="co">#&gt; 83           5.8         2.7          3.9         1.2</span>
+<span class="co">#&gt; 84           6.0         2.7          5.1         1.6</span>
+<span class="co">#&gt; 85           5.4         3.0          4.5         1.5</span>
+<span class="co">#&gt; 86           6.0         3.4          4.5         1.6</span>
+<span class="co">#&gt; 87           6.7         3.1          4.7         1.5</span>
+<span class="co">#&gt; 88           6.3         2.3          4.4         1.3</span>
+<span class="co">#&gt; 89           5.6         3.0          4.1         1.3</span>
+<span class="co">#&gt; 90           5.5         2.5          4.0         1.3</span>
+<span class="co">#&gt; 91           5.5         2.6          4.4         1.2</span>
+<span class="co">#&gt; 92           6.1         3.0          4.6         1.4</span>
+<span class="co">#&gt; 93           5.8         2.6          4.0         1.2</span>
+<span class="co">#&gt; 94           5.0         2.3          3.3         1.0</span>
+<span class="co">#&gt; 95           5.6         2.7          4.2         1.3</span>
+<span class="co">#&gt; 96           5.7         3.0          4.2         1.2</span>
+<span class="co">#&gt; 97           5.7         2.9          4.2         1.3</span>
+<span class="co">#&gt; 98           6.2         2.9          4.3         1.3</span>
+<span class="co">#&gt; 99           5.1         2.5          3.0         1.1</span>
+<span class="co">#&gt; 100          5.7         2.8          4.1         1.3</span>
+<span class="co">#&gt; 101          6.3         3.3          6.0         2.5</span>
+<span class="co">#&gt; 102          5.8         2.7          5.1         1.9</span>
+<span class="co">#&gt; 103          7.1         3.0          5.9         2.1</span>
+<span class="co">#&gt; 104          6.3         2.9          5.6         1.8</span>
+<span class="co">#&gt; 105          6.5         3.0          5.8         2.2</span>
+<span class="co">#&gt; 106          7.6         3.0          6.6         2.1</span>
+<span class="co">#&gt; 107          4.9         2.5          4.5         1.7</span>
+<span class="co">#&gt; 108          7.3         2.9          6.3         1.8</span>
+<span class="co">#&gt; 109          6.7         2.5          5.8         1.8</span>
+<span class="co">#&gt; 110          7.2         3.6          6.1         2.5</span>
+<span class="co">#&gt; 111          6.5         3.2          5.1         2.0</span>
+<span class="co">#&gt; 112          6.4         2.7          5.3         1.9</span>
+<span class="co">#&gt; 113          6.8         3.0          5.5         2.1</span>
+<span class="co">#&gt; 114          5.7         2.5          5.0         2.0</span>
+<span class="co">#&gt; 115          5.8         2.8          5.1         2.4</span>
+<span class="co">#&gt; 116          6.4         3.2          5.3         2.3</span>
+<span class="co">#&gt; 117          6.5         3.0          5.5         1.8</span>
+<span class="co">#&gt; 118          7.7         3.8          6.7         2.2</span>
+<span class="co">#&gt; 119          7.7         2.6          6.9         2.3</span>
+<span class="co">#&gt; 120          6.0         2.2          5.0         1.5</span>
+<span class="co">#&gt; 121          6.9         3.2          5.7         2.3</span>
+<span class="co">#&gt; 122          5.6         2.8          4.9         2.0</span>
+<span class="co">#&gt; 123          7.7         2.8          6.7         2.0</span>
+<span class="co">#&gt; 124          6.3         2.7          4.9         1.8</span>
+<span class="co">#&gt; 125          6.7         3.3          5.7         2.1</span>
+<span class="co">#&gt; 126          7.2         3.2          6.0         1.8</span>
+<span class="co">#&gt; 127          6.2         2.8          4.8         1.8</span>
+<span class="co">#&gt; 128          6.1         3.0          4.9         1.8</span>
+<span class="co">#&gt; 129          6.4         2.8          5.6         2.1</span>
+<span class="co">#&gt; 130          7.2         3.0          5.8         1.6</span>
+<span class="co">#&gt; 131          7.4         2.8          6.1         1.9</span>
+<span class="co">#&gt; 132          7.9         3.8          6.4         2.0</span>
+<span class="co">#&gt; 133          6.4         2.8          5.6         2.2</span>
+<span class="co">#&gt; 134          6.3         2.8          5.1         1.5</span>
+<span class="co">#&gt; 135          6.1         2.6          5.6         1.4</span>
+<span class="co">#&gt; 136          7.7         3.0          6.1         2.3</span>
+<span class="co">#&gt; 137          6.3         3.4          5.6         2.4</span>
+<span class="co">#&gt; 138          6.4         3.1          5.5         1.8</span>
+<span class="co">#&gt; 139          6.0         3.0          4.8         1.8</span>
+<span class="co">#&gt; 140          6.9         3.1          5.4         2.1</span>
+<span class="co">#&gt; 141          6.7         3.1          5.6         2.4</span>
+<span class="co">#&gt; 142          6.9         3.1          5.1         2.3</span>
+<span class="co">#&gt; 143          5.8         2.7          5.1         1.9</span>
+<span class="co">#&gt; 144          6.8         3.2          5.9         2.3</span>
+<span class="co">#&gt; 145          6.7         3.3          5.7         2.5</span>
+<span class="co">#&gt; 146          6.7         3.0          5.2         2.3</span>
+<span class="co">#&gt; 147          6.3         2.5          5.0         1.9</span>
+<span class="co">#&gt; 148          6.5         3.0          5.2         2.0</span>
+<span class="co">#&gt; 149          6.2         3.4          5.4         2.3</span>
+<span class="co">#&gt; 150          5.9         3.0          5.1         1.8</span>
+<span class="co">#&gt;        Species</span>
+<span class="co">#&gt; 1       setosa</span>
+<span class="co">#&gt; 2       setosa</span>
+<span class="co">#&gt; 3       setosa</span>
+<span class="co">#&gt; 4       setosa</span>
+<span class="co">#&gt; 5       setosa</span>
+<span class="co">#&gt; 6       setosa</span>
+<span class="co">#&gt; 7       setosa</span>
+<span class="co">#&gt; 8       setosa</span>
+<span class="co">#&gt; 9       setosa</span>
+<span class="co">#&gt; 10      setosa</span>
+<span class="co">#&gt; 11      setosa</span>
+<span class="co">#&gt; 12      setosa</span>
+<span class="co">#&gt; 13      setosa</span>
+<span class="co">#&gt; 14      setosa</span>
+<span class="co">#&gt; 15      setosa</span>
+<span class="co">#&gt; 16      setosa</span>
+<span class="co">#&gt; 17      setosa</span>
+<span class="co">#&gt; 18      setosa</span>
+<span class="co">#&gt; 19      setosa</span>
+<span class="co">#&gt; 20      setosa</span>
+<span class="co">#&gt; 21      setosa</span>
+<span class="co">#&gt; 22      setosa</span>
+<span class="co">#&gt; 23      setosa</span>
+<span class="co">#&gt; 24      setosa</span>
+<span class="co">#&gt; 25      setosa</span>
+<span class="co">#&gt; 26      setosa</span>
+<span class="co">#&gt; 27      setosa</span>
+<span class="co">#&gt; 28      setosa</span>
+<span class="co">#&gt; 29      setosa</span>
+<span class="co">#&gt; 30      setosa</span>
+<span class="co">#&gt; 31      setosa</span>
+<span class="co">#&gt; 32      setosa</span>
+<span class="co">#&gt; 33      setosa</span>
+<span class="co">#&gt; 34      setosa</span>
+<span class="co">#&gt; 35      setosa</span>
+<span class="co">#&gt; 36      setosa</span>
+<span class="co">#&gt; 37      setosa</span>
+<span class="co">#&gt; 38      setosa</span>
+<span class="co">#&gt; 39      setosa</span>
+<span class="co">#&gt; 40      setosa</span>
+<span class="co">#&gt; 41      setosa</span>
+<span class="co">#&gt; 42      setosa</span>
+<span class="co">#&gt; 43      setosa</span>
+<span class="co">#&gt; 44      setosa</span>
+<span class="co">#&gt; 45      setosa</span>
+<span class="co">#&gt; 46      setosa</span>
+<span class="co">#&gt; 47      setosa</span>
+<span class="co">#&gt; 48      setosa</span>
+<span class="co">#&gt; 49      setosa</span>
+<span class="co">#&gt; 50      setosa</span>
+<span class="co">#&gt; 51  versicolor</span>
+<span class="co">#&gt; 52  versicolor</span>
+<span class="co">#&gt; 53  versicolor</span>
+<span class="co">#&gt; 54  versicolor</span>
+<span class="co">#&gt; 55  versicolor</span>
+<span class="co">#&gt; 56  versicolor</span>
+<span class="co">#&gt; 57  versicolor</span>
+<span class="co">#&gt; 58  versicolor</span>
+<span class="co">#&gt; 59  versicolor</span>
+<span class="co">#&gt; 60  versicolor</span>
+<span class="co">#&gt; 61  versicolor</span>
+<span class="co">#&gt; 62  versicolor</span>
+<span class="co">#&gt; 63  versicolor</span>
+<span class="co">#&gt; 64  versicolor</span>
+<span class="co">#&gt; 65  versicolor</span>
+<span class="co">#&gt; 66  versicolor</span>
+<span class="co">#&gt; 67  versicolor</span>
+<span class="co">#&gt; 68  versicolor</span>
+<span class="co">#&gt; 69  versicolor</span>
+<span class="co">#&gt; 70  versicolor</span>
+<span class="co">#&gt; 71  versicolor</span>
+<span class="co">#&gt; 72  versicolor</span>
+<span class="co">#&gt; 73  versicolor</span>
+<span class="co">#&gt; 74  versicolor</span>
+<span class="co">#&gt; 75  versicolor</span>
+<span class="co">#&gt; 76  versicolor</span>
+<span class="co">#&gt; 77  versicolor</span>
+<span class="co">#&gt; 78  versicolor</span>
+<span class="co">#&gt; 79  versicolor</span>
+<span class="co">#&gt; 80  versicolor</span>
+<span class="co">#&gt; 81  versicolor</span>
+<span class="co">#&gt; 82  versicolor</span>
+<span class="co">#&gt; 83  versicolor</span>
+<span class="co">#&gt; 84  versicolor</span>
+<span class="co">#&gt; 85  versicolor</span>
+<span class="co">#&gt; 86  versicolor</span>
+<span class="co">#&gt; 87  versicolor</span>
+<span class="co">#&gt; 88  versicolor</span>
+<span class="co">#&gt; 89  versicolor</span>
+<span class="co">#&gt; 90  versicolor</span>
+<span class="co">#&gt; 91  versicolor</span>
+<span class="co">#&gt; 92  versicolor</span>
+<span class="co">#&gt; 93  versicolor</span>
+<span class="co">#&gt; 94  versicolor</span>
+<span class="co">#&gt; 95  versicolor</span>
+<span class="co">#&gt; 96  versicolor</span>
+<span class="co">#&gt; 97  versicolor</span>
+<span class="co">#&gt; 98  versicolor</span>
+<span class="co">#&gt; 99  versicolor</span>
+<span class="co">#&gt; 100 versicolor</span>
+<span class="co">#&gt; 101  virginica</span>
+<span class="co">#&gt; 102  virginica</span>
+<span class="co">#&gt; 103  virginica</span>
+<span class="co">#&gt; 104  virginica</span>
+<span class="co">#&gt; 105  virginica</span>
+<span class="co">#&gt; 106  virginica</span>
+<span class="co">#&gt; 107  virginica</span>
+<span class="co">#&gt; 108  virginica</span>
+<span class="co">#&gt; 109  virginica</span>
+<span class="co">#&gt; 110  virginica</span>
+<span class="co">#&gt; 111  virginica</span>
+<span class="co">#&gt; 112  virginica</span>
+<span class="co">#&gt; 113  virginica</span>
+<span class="co">#&gt; 114  virginica</span>
+<span class="co">#&gt; 115  virginica</span>
+<span class="co">#&gt; 116  virginica</span>
+<span class="co">#&gt; 117  virginica</span>
+<span class="co">#&gt; 118  virginica</span>
+<span class="co">#&gt; 119  virginica</span>
+<span class="co">#&gt; 120  virginica</span>
+<span class="co">#&gt; 121  virginica</span>
+<span class="co">#&gt; 122  virginica</span>
+<span class="co">#&gt; 123  virginica</span>
+<span class="co">#&gt; 124  virginica</span>
+<span class="co">#&gt; 125  virginica</span>
+<span class="co">#&gt; 126  virginica</span>
+<span class="co">#&gt; 127  virginica</span>
+<span class="co">#&gt; 128  virginica</span>
+<span class="co">#&gt; 129  virginica</span>
+<span class="co">#&gt; 130  virginica</span>
+<span class="co">#&gt; 131  virginica</span>
+<span class="co">#&gt; 132  virginica</span>
+<span class="co">#&gt; 133  virginica</span>
+<span class="co">#&gt; 134  virginica</span>
+<span class="co">#&gt; 135  virginica</span>
+<span class="co">#&gt; 136  virginica</span>
+<span class="co">#&gt; 137  virginica</span>
+<span class="co">#&gt; 138  virginica</span>
+<span class="co">#&gt; 139  virginica</span>
+<span class="co">#&gt; 140  virginica</span>
+<span class="co">#&gt; 141  virginica</span>
+<span class="co">#&gt; 142  virginica</span>
+<span class="co">#&gt; 143  virginica</span>
+<span class="co">#&gt; 144  virginica</span>
+<span class="co">#&gt; 145  virginica</span>
+<span class="co">#&gt; 146  virginica</span>
+<span class="co">#&gt; 147  virginica</span>
+<span class="co">#&gt; 148  virginica</span>
+<span class="co">#&gt; 149  virginica</span>
+<span class="co">#&gt; 150  virginica</span></code></pre></div>
+<ul>
+<li>那從這筆資料，就可發現有5個變數，其中4個是連續型，一個是類別型<br>
+</li>
+<li>那我用 <code>recipe(Species ~., data = iris)</code> ，就可定義好這些變數的 type 和 role：</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_recipe</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal outcome   original</span></code></pre></div>
+<ul>
+<li>可以看到，藉由 <code>data = iris</code>，這個recipe物件就可以知道variable有哪 5 個，然後從這5個變數在此data中的型別，就可以得知他的type。<br>
+</li>
+<li>接著，formula: <code>Species ~ .</code>，這個recipe物件就可以知道Species的role是outcome，而其他都是predictor</li>
+<li>特別提醒：
+<ul>
+<li>這邊的formula，不是最後我們要fit model所用的formula。這個formula只是為了定義出各個變數的角色而已。<br>
+</li>
+<li>這邊的data，也不是我們要fit model所用的data。這邊的data只是讓我知道總共有哪些變數，各個變數的type是什麼而已。所以這邊你要放training data, testing data, total_data, cv_data 都隨便你，只要這個data裡有你想specify的變數，且這個data各個變數的type都是正確的就好。<br>
+</li>
+</ul>
+</li>
+<li>有了這個概念後，就可以來舉一反三了，例如，我想指名Species是predictor就好：</li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span><span class="va">Species</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 1 × 4</span>
+<span class="co">#&gt;   variable type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Species  nominal predictor original</span></code></pre></div>
+<ul>
+<li>我想指名 <code>Sepal.Length</code> &amp; <code>Sepal.Width</code> 是 outcome，其他都是 predictor:</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Sepal.Length</span> <span class="op">+</span> <span class="va">Sepal.Width</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Species      nominal predictor original</span>
+<span class="co">#&gt; 4 Sepal.Length numeric outcome   original</span>
+<span class="co">#&gt; 5 Sepal.Width  numeric outcome   original</span></code></pre></div>
+<ul>
+<li>我覺得大家都是 predictor</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal predictor original</span></code></pre></div>
+<ul>
+<li>我不想指定role，只想指定type</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role  source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;lgl&gt; &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric NA    original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric NA    original</span>
+<span class="co">#&gt; 3 Petal.Length numeric NA    original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric NA    original</span>
+<span class="co">#&gt; 5 Species      nominal NA    original</span></code></pre></div>
+</div>
+<div id="update_role" class="section level3" number="1.2.2">
+<h3>
+<span class="header-section-number">1.2.2</span> update_role<a class="anchor" aria-label="anchor" href="#update_role"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>如果我想更新某些變數的角色，那我可以用 <code><a href="https://recipes.tidymodels.org/reference/roles.html">update_role()</a></code><br>
+</li>
+<li>舉例來說，剛剛的iris data，我目前的recipe長這樣：</li>
+</ul>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_recipe</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal outcome   original</span></code></pre></div>
+<ul>
+<li>那我如果突然不想做supervised learning了，我想做做分群或PCA等unsupervised learning，那我就把<code>outcome</code>的role，轉成<code>predictor</code>
+</li>
+</ul>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/roles.html">update_role</a></span><span class="op">(</span><span class="va">Species</span>, new_role <span class="op">=</span> <span class="st">"predictor"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal predictor original</span></code></pre></div>
+<ul>
+<li>甚至，這些變數其實也不是predictor了，因為在unsupervised learning裡，根本沒predictor這種東西。那我可以更新他們的角色，叫做”characteristic”。這個名稱隨便你取，你取啥都可以：</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_recipe</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/roles.html">update_role</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span>, new_role <span class="op">=</span> <span class="st">"characteristic"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 4</span>
+<span class="co">#&gt;   variable     type    role           source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric characteristic original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric characteristic original</span>
+<span class="co">#&gt; 3 Petal.Length numeric characteristic original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric characteristic original</span>
+<span class="co">#&gt; 5 Species      nominal characteristic original</span></code></pre></div>
+</div>
+<div id="role-inheritance" class="section level3" number="1.2.3">
+<h3>
+<span class="header-section-number">1.2.3</span> role inheritance<a class="anchor" aria-label="anchor" href="#role-inheritance"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>等等會學很多step_function，他會改變我原先的變數。那變數改變後，他的角色會變怎樣？<br>
+</li>
+<li>答案是，角色會繼承(預設)。或是，你在做step_function時，直接assign給他新角色。</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 6 × 4</span>
+<span class="co">#&gt;   variable           type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;              &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length       numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width        numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length       numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width        numeric predictor original</span>
+<span class="co">#&gt; 5 Species_versicolor numeric predictor derived </span>
+<span class="co">#&gt; 6 Species_virginica  numeric predictor derived</span></code></pre></div>
+<ul>
+<li>可以看到，Species已經被轉成Species_versicolor和Species_virginica了。<br>
+</li>
+<li>會轉成這兩個level，是靠<code><a href="https://recipes.tidymodels.org/reference/prep.html">prep()</a></code>裡面的data來轉的。<br>
+</li>
+<li>而轉完的role，仍然是predictor。而source可以看到，從original變成derived，因為這是後續生出來的變數<br>
+</li>
+<li>那另一個例子是，我做step_dummy時，直接assign給他新角色，例如：</li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span>, role <span class="op">=</span> <span class="st">"trousers"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 6 × 4</span>
+<span class="co">#&gt;   variable           type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;              &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length       numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width        numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length       numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width        numeric predictor original</span>
+<span class="co">#&gt; 5 Species_versicolor numeric trousers  derived </span>
+<span class="co">#&gt; 6 Species_virginica  numeric trousers  derived</span></code></pre></div>
+<ul>
+<li>這邊就可以看到，本來Species在最一開始，是predictor的角色，但我在做step_dummy時，assign他轉換後的結果要是”trousers”這個角色。那轉完就可以看到role的確是 trousers</li>
+</ul>
+</div>
+</div>
+<div id="selecting-variables" class="section level2" number="1.3">
+<h2>
+<span class="header-section-number">1.3</span> Selecting Variables<a class="anchor" aria-label="anchor" href="#selecting-variables"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>上一章定義完變數的meta-data後，現在每個變數都具有三個特徵：
+<ul>
+<li>這個變數的名字<br>
+</li>
+<li>這個變數的type<br>
+</li>
+<li>這個變數的role<br>
+</li>
+</ul>
+</li>
+<li>所以，我在選擇變數的時候，我就可以善用這三個特徵來選變數</li>
+</ul>
+<div id="用名字選變數" class="section level3" number="1.3.1">
+<h3>
+<span class="header-section-number">1.3.1</span> 用名字選變數<a class="anchor" aria-label="anchor" href="#%E7%94%A8%E5%90%8D%E5%AD%97%E9%81%B8%E8%AE%8A%E6%95%B8"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>舉例來說，我的step_dummy，想做在 species 上，那我可以寫：</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 6</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt;  1          5.1         3.5          1.4         0.2</span>
+<span class="co">#&gt;  2          4.9         3            1.4         0.2</span>
+<span class="co">#&gt;  3          4.7         3.2          1.3         0.2</span>
+<span class="co">#&gt;  4          4.6         3.1          1.5         0.2</span>
+<span class="co">#&gt;  5          5           3.6          1.4         0.2</span>
+<span class="co">#&gt;  6          5.4         3.9          1.7         0.4</span>
+<span class="co">#&gt;  7          4.6         3.4          1.4         0.3</span>
+<span class="co">#&gt;  8          5           3.4          1.5         0.2</span>
+<span class="co">#&gt;  9          4.4         2.9          1.4         0.2</span>
+<span class="co">#&gt; 10          4.9         3.1          1.5         0.1</span>
+<span class="co">#&gt; # … with 140 more rows, and 2 more variables:</span>
+<span class="co">#&gt; #   Species_versicolor &lt;dbl&gt;, Species_virginica &lt;dbl&gt;</span></code></pre></div>
+<ul>
+<li>我也可以用dplyr的<code><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with()</a></code>, <code>end_with()</code>,…來選變數。例如：</li>
+</ul>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"Sepal"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 5</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width Species</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  </span>
+<span class="co">#&gt;  1       -0.898      1.02            1.4         0.2 setosa </span>
+<span class="co">#&gt;  2       -1.14      -0.132           1.4         0.2 setosa </span>
+<span class="co">#&gt;  3       -1.38       0.327           1.3         0.2 setosa </span>
+<span class="co">#&gt;  4       -1.50       0.0979          1.5         0.2 setosa </span>
+<span class="co">#&gt;  5       -1.02       1.25            1.4         0.2 setosa </span>
+<span class="co">#&gt;  6       -0.535      1.93            1.7         0.4 setosa </span>
+<span class="co">#&gt;  7       -1.50       0.786           1.4         0.3 setosa </span>
+<span class="co">#&gt;  8       -1.02       0.786           1.5         0.2 setosa </span>
+<span class="co">#&gt;  9       -1.74      -0.361           1.4         0.2 setosa </span>
+<span class="co">#&gt; 10       -1.14       0.0979          1.5         0.1 setosa </span>
+<span class="co">#&gt; # … with 140 more rows</span></code></pre></div>
+</div>
+<div id="用type選變數" class="section level3" number="1.3.2">
+<h3>
+<span class="header-section-number">1.3.2</span> 用type選變數<a class="anchor" aria-label="anchor" href="#%E7%94%A8type%E9%81%B8%E8%AE%8A%E6%95%B8"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>變數的type有nominal和 numeric，所以，我可以這樣做：</li>
+</ul>
+<div id="all_numeric" class="section level4" number="1.3.2.1">
+<h4>
+<span class="header-section-number">1.3.2.1</span> all_numeric()<a class="anchor" aria-label="anchor" href="#all_numeric"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 5</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width Species</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  </span>
+<span class="co">#&gt;  1       -0.898      1.02          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  2       -1.14      -0.132         -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  3       -1.38       0.327         -1.39       -1.31 setosa </span>
+<span class="co">#&gt;  4       -1.50       0.0979        -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  5       -1.02       1.25          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  6       -0.535      1.93          -1.17       -1.05 setosa </span>
+<span class="co">#&gt;  7       -1.50       0.786         -1.34       -1.18 setosa </span>
+<span class="co">#&gt;  8       -1.02       0.786         -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  9       -1.74      -0.361         -1.34       -1.31 setosa </span>
+<span class="co">#&gt; 10       -1.14       0.0979        -1.28       -1.44 setosa </span>
+<span class="co">#&gt; # … with 140 more rows</span></code></pre></div>
+</div>
+<div id="all_nominal" class="section level4" number="1.3.2.2">
+<h4>
+<span class="header-section-number">1.3.2.2</span> all_nominal()<a class="anchor" aria-label="anchor" href="#all_nominal"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_nominal</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 6</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt;  1          5.1         3.5          1.4         0.2</span>
+<span class="co">#&gt;  2          4.9         3            1.4         0.2</span>
+<span class="co">#&gt;  3          4.7         3.2          1.3         0.2</span>
+<span class="co">#&gt;  4          4.6         3.1          1.5         0.2</span>
+<span class="co">#&gt;  5          5           3.6          1.4         0.2</span>
+<span class="co">#&gt;  6          5.4         3.9          1.7         0.4</span>
+<span class="co">#&gt;  7          4.6         3.4          1.4         0.3</span>
+<span class="co">#&gt;  8          5           3.4          1.5         0.2</span>
+<span class="co">#&gt;  9          4.4         2.9          1.4         0.2</span>
+<span class="co">#&gt; 10          4.9         3.1          1.5         0.1</span>
+<span class="co">#&gt; # … with 140 more rows, and 2 more variables:</span>
+<span class="co">#&gt; #   Species_versicolor &lt;dbl&gt;, Species_virginica &lt;dbl&gt;</span></code></pre></div>
+</div>
+</div>
+<div id="用role選變數" class="section level3" number="1.3.3">
+<h3>
+<span class="header-section-number">1.3.3</span> 用role選變數<a class="anchor" aria-label="anchor" href="#%E7%94%A8role%E9%81%B8%E8%AE%8A%E6%95%B8"><i class="fas fa-link"></i></a>
+</h3>
+<div id="all_predictors" class="section level4" number="1.3.3.1">
+<h4>
+<span class="header-section-number">1.3.3.1</span> all_predictors()<a class="anchor" aria-label="anchor" href="#all_predictors"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 5</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width Species</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  </span>
+<span class="co">#&gt;  1       -0.898      1.02          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  2       -1.14      -0.132         -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  3       -1.38       0.327         -1.39       -1.31 setosa </span>
+<span class="co">#&gt;  4       -1.50       0.0979        -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  5       -1.02       1.25          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  6       -0.535      1.93          -1.17       -1.05 setosa </span>
+<span class="co">#&gt;  7       -1.50       0.786         -1.34       -1.18 setosa </span>
+<span class="co">#&gt;  8       -1.02       0.786         -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  9       -1.74      -0.361         -1.34       -1.31 setosa </span>
+<span class="co">#&gt; 10       -1.14       0.0979        -1.28       -1.44 setosa </span>
+<span class="co">#&gt; # … with 140 more rows</span></code></pre></div>
+</div>
+<div id="all_outcomes" class="section level4" number="1.3.3.2">
+<h4>
+<span class="header-section-number">1.3.3.2</span> all_outcomes()<a class="anchor" aria-label="anchor" href="#all_outcomes"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 6</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;</span>
+<span class="co">#&gt;  1          5.1         3.5          1.4         0.2</span>
+<span class="co">#&gt;  2          4.9         3            1.4         0.2</span>
+<span class="co">#&gt;  3          4.7         3.2          1.3         0.2</span>
+<span class="co">#&gt;  4          4.6         3.1          1.5         0.2</span>
+<span class="co">#&gt;  5          5           3.6          1.4         0.2</span>
+<span class="co">#&gt;  6          5.4         3.9          1.7         0.4</span>
+<span class="co">#&gt;  7          4.6         3.4          1.4         0.3</span>
+<span class="co">#&gt;  8          5           3.4          1.5         0.2</span>
+<span class="co">#&gt;  9          4.4         2.9          1.4         0.2</span>
+<span class="co">#&gt; 10          4.9         3.1          1.5         0.1</span>
+<span class="co">#&gt; # … with 140 more rows, and 2 more variables:</span>
+<span class="co">#&gt; #   Species_versicolor &lt;dbl&gt;, Species_virginica &lt;dbl&gt;</span></code></pre></div>
+</div>
+<div id="has_role" class="section level4" number="1.3.3.3">
+<h4>
+<span class="header-section-number">1.3.3.3</span> has_role()<a class="anchor" aria-label="anchor" href="#has_role"><i class="fas fa-link"></i></a>
+</h4>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, 
+       data <span class="op">=</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>money <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">150</span>, mean <span class="op">=</span> <span class="fl">100000</span>, sd <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/roles.html">update_role</a></span><span class="op">(</span><span class="va">money</span>, new_role <span class="op">=</span> <span class="st">"whatever"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_log.html">step_log</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">has_role</a></span><span class="op">(</span><span class="st">"whatever"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 6</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width money</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt;  1          5.1         3.5          1.4         0.2  11.5</span>
+<span class="co">#&gt;  2          4.9         3            1.4         0.2  11.5</span>
+<span class="co">#&gt;  3          4.7         3.2          1.3         0.2  11.5</span>
+<span class="co">#&gt;  4          4.6         3.1          1.5         0.2  11.5</span>
+<span class="co">#&gt;  5          5           3.6          1.4         0.2  11.5</span>
+<span class="co">#&gt;  6          5.4         3.9          1.7         0.4  11.5</span>
+<span class="co">#&gt;  7          4.6         3.4          1.4         0.3  11.5</span>
+<span class="co">#&gt;  8          5           3.4          1.5         0.2  11.5</span>
+<span class="co">#&gt;  9          4.4         2.9          1.4         0.2  11.5</span>
+<span class="co">#&gt; 10          4.9         3.1          1.5         0.1  11.5</span>
+<span class="co">#&gt; # … with 140 more rows, and 1 more variable: Species &lt;fct&gt;</span></code></pre></div>
+</div>
+</div>
+<div id="全部參雜在一起選變數" class="section level3" number="1.3.4">
+<h3>
+<span class="header-section-number">1.3.4</span> 全部參雜在一起選變數<a class="anchor" aria-label="anchor" href="#%E5%85%A8%E9%83%A8%E5%8F%83%E9%9B%9C%E5%9C%A8%E4%B8%80%E8%B5%B7%E9%81%B8%E8%AE%8A%E6%95%B8"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>例如我可以選全部的 “type = numeric” but “role != outcome”的變數，做log處理</li>
+</ul>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">money</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>money <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">100000</span>, <span class="fl">1000</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_outcomes</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/juice.html">juice</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 150 × 6</span>
+<span class="co">#&gt;    Sepal.Length Sepal.Width Petal.Length Petal.Width Species</span>
+<span class="co">#&gt;           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;  </span>
+<span class="co">#&gt;  1       -0.898      1.02          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  2       -1.14      -0.132         -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  3       -1.38       0.327         -1.39       -1.31 setosa </span>
+<span class="co">#&gt;  4       -1.50       0.0979        -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  5       -1.02       1.25          -1.34       -1.31 setosa </span>
+<span class="co">#&gt;  6       -0.535      1.93          -1.17       -1.05 setosa </span>
+<span class="co">#&gt;  7       -1.50       0.786         -1.34       -1.18 setosa </span>
+<span class="co">#&gt;  8       -1.02       0.786         -1.28       -1.31 setosa </span>
+<span class="co">#&gt;  9       -1.74      -0.361         -1.34       -1.31 setosa </span>
+<span class="co">#&gt; 10       -1.14       0.0979        -1.28       -1.44 setosa </span>
+<span class="co">#&gt; # … with 140 more rows, and 1 more variable: money &lt;dbl&gt;</span></code></pre></div>
+<ul>
+<li>也有一些 compund selectors，例如： <code><a href="https://recipes.tidymodels.org/reference/has_role.html">all_nominal_predictors()</a></code> or <code><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors()</a></code>
+</li>
+</ul>
+</div>
+</div>
+<div id="define-preprocessing-steps" class="section level2" number="1.4">
+<h2>
+<span class="header-section-number">1.4</span> Define Preprocessing Steps<a class="anchor" aria-label="anchor" href="#define-preprocessing-steps"><i class="fas fa-link"></i></a>
+</h2>
+<div id="impute-missing-values" class="section level3" number="1.4.1">
+<h3>
+<span class="header-section-number">1.4.1</span> Impute missing values<a class="anchor" aria-label="anchor" href="#impute-missing-values"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_unknown" class="section level4" number="1.4.1.1">
+<h4>
+<span class="header-section-number">1.4.1.1</span> step_unknown<a class="anchor" aria-label="anchor" href="#step_unknown"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>如果 cat1 是個類別變數，然後資料裡面有 missing，我們可以用 <code><a href="https://recipes.tidymodels.org/reference/step_unknown.html">step_unknown()</a></code>，把missing的地方幫他補成 “unknown”</li>
+</ul>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_train</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
+  cat1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="st">"A"</span>,<span class="st">"B"</span>,<span class="cn">NA</span>, <span class="st">"C"</span><span class="op">)</span>,
+  cont1 <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>
+<span class="op">)</span>
+<span class="va">my_unknown</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span><span class="va">.</span>, data <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_unknown.html">step_unknown</a></span><span class="op">(</span><span class="va">cat1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span>
+
+<span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">my_unknown</span>, <span class="va">df_train</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 2</span>
+<span class="co">#&gt;   cat1    cont1</span>
+<span class="co">#&gt;   &lt;fct&gt;   &lt;int&gt;</span>
+<span class="co">#&gt; 1 A           1</span>
+<span class="co">#&gt; 2 A           2</span>
+<span class="co">#&gt; 3 B           3</span>
+<span class="co">#&gt; 4 unknown     4</span>
+<span class="co">#&gt; 5 C           5</span></code></pre></div>
+<ul>
+<li>也可以加上 <code>new_level = "xxx"</code>，來把 unknown 換成你喜歡的 level</li>
+</ul>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my_unknown2</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span><span class="va">.</span>, data <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_unknown.html">step_unknown</a></span><span class="op">(</span><span class="va">cat1</span>, new_level <span class="op">=</span> <span class="st">"missing_catcat"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span>
+
+<span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">my_unknown2</span>, <span class="va">df_train</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 2</span>
+<span class="co">#&gt;   cat1           cont1</span>
+<span class="co">#&gt;   &lt;fct&gt;          &lt;int&gt;</span>
+<span class="co">#&gt; 1 A                  1</span>
+<span class="co">#&gt; 2 A                  2</span>
+<span class="co">#&gt; 3 B                  3</span>
+<span class="co">#&gt; 4 missing_catcat     4</span>
+<span class="co">#&gt; 5 C                  5</span></code></pre></div>
+</div>
+</div>
+<div id="對-categorical-variables常見的處理" class="section level3" number="1.4.2">
+<h3>
+<span class="header-section-number">1.4.2</span> 對 categorical variables常見的處理<a class="anchor" aria-label="anchor" href="#%E5%B0%8D-categorical-variables%E5%B8%B8%E8%A6%8B%E7%9A%84%E8%99%95%E7%90%86"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_dummy" class="section level4" number="1.4.2.1">
+<h4>
+<span class="header-section-number">1.4.2.1</span> step_dummy<a class="anchor" aria-label="anchor" href="#step_dummy"><i class="fas fa-link"></i></a>
+</h4>
+<div id="dummy-coding" class="section level5" number="1.4.2.1.1">
+<h5>
+<span class="header-section-number">1.4.2.1.1</span> dummy coding<a class="anchor" aria-label="anchor" href="#dummy-coding"><i class="fas fa-link"></i></a>
+</h5>
+<ul>
+<li>雖然，很多package都有內建這個功能(e.g. lm()會自動把factor變數做dummy)，但各個package常常有不一致的地方：
+<ul>
+<li>有的package用dummy coding，有的用one-hot encoding<br>
+</li>
+<li>各個package在做dummy/one-hot時，命名方式也不一樣<br>
+</li>
+</ul>
+</li>
+<li>所以，我們可以在前處理的時候，用recipe先把類別變數都統一的轉好，那丟到不同model的engine時，就不用再管之後彼此會出現不一致了<br>
+</li>
+<li>繼續舉剛剛的例子，並且先建立一個original欄位，：</li>
+</ul>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris2</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Species_old <span class="op">=</span> <span class="va">Species</span><span class="op">)</span>
+<span class="va">iris_dummy</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_dummy</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 7 × 4</span>
+<span class="co">#&gt;   variable           type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;              &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length       numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width        numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length       numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width        numeric predictor original</span>
+<span class="co">#&gt; 5 Species_old        nominal predictor original</span>
+<span class="co">#&gt; 6 Species_versicolor numeric predictor derived </span>
+<span class="co">#&gt; 7 Species_virginica  numeric predictor derived</span></code></pre></div>
+<ul>
+<li>做轉換：</li>
+</ul>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_dummy</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Species_old</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"Species"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html">distinct</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 3</span>
+<span class="co">#&gt;   Species_old Species_versicolor Species_virginica</span>
+<span class="co">#&gt;   &lt;fct&gt;                    &lt;dbl&gt;             &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 setosa                       0                 0</span>
+<span class="co">#&gt; 2 versicolor                   1                 0</span>
+<span class="co">#&gt; 3 virginica                    0                 1</span></code></pre></div>
+</div>
+<div id="contrast" class="section level5" number="1.4.2.1.2">
+<h5>
+<span class="header-section-number">1.4.2.1.2</span> contrast<a class="anchor" aria-label="anchor" href="#contrast"><i class="fas fa-link"></i></a>
+</h5>
+<ul>
+<li>在實驗設計裡，還有不同的dummy coding方式，例如sum coding, helmert coding, …<br>
+</li>
+<li>和 dummy 的差別是，他coding完可能是用 sum = 0 的方式 (e.g. coding成 c(-1, 0, 1))<br>
+</li>
+<li>那這部分在 recipe 的網站上有範例 (ARTICLES/DUMMY VARIABLES …)，我這邊很少用就先不整理了</li>
+</ul>
+</div>
+<div id="one-hot-coding" class="section level5" number="1.4.2.1.3">
+<h5>
+<span class="header-section-number">1.4.2.1.3</span> one-hot coding<a class="anchor" aria-label="anchor" href="#one-hot-coding"><i class="fas fa-link"></i></a>
+</h5>
+<ul>
+<li>加上 <code>one_hot = TRUE</code> 就好</li>
+</ul>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris2</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Species_old <span class="op">=</span> <span class="va">Species</span><span class="op">)</span>
+<span class="va">iris_onehot</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span>, one_hot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span>
+<span class="va">iris_onehot</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">iris2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Species_old</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"Species"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html">distinct</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 4</span>
+<span class="co">#&gt;   Species_old Species_setosa Species_versicolor</span>
+<span class="co">#&gt;   &lt;fct&gt;                &lt;dbl&gt;              &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 setosa                   1                  0</span>
+<span class="co">#&gt; 2 versicolor               0                  1</span>
+<span class="co">#&gt; 3 virginica                0                  0</span>
+<span class="co">#&gt; # … with 1 more variable: Species_virginica &lt;dbl&gt;</span></code></pre></div>
+</div>
+</div>
+<div id="step_other" class="section level4" number="1.4.2.2">
+<h4>
+<span class="header-section-number">1.4.2.2</span> step_other<a class="anchor" aria-label="anchor" href="#step_other"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>對於類別變數，我們可以把出現頻率較少的level，全都整併成 others</li>
+<li>如果bake的時候，餵進來的變數，有新的level，那他也會被併到 others 裡面<br>
+</li>
+<li>以下舉例：</li>
+</ul>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_train</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
+  cat1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="fl">50</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"B"</span>,<span class="fl">40</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
+  cont1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="va">df_train</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">cat1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/proportions.html">prop.table</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt;   cat1  n    p</span>
+<span class="co">#&gt; 1    A 50 0.50</span>
+<span class="co">#&gt; 2    B 40 0.40</span>
+<span class="co">#&gt; 3    C  5 0.05</span>
+<span class="co">#&gt; 4    D  5 0.05</span></code></pre></div>
+<ul>
+<li>上面這個資料集，training data的cat1有4個level，而C和D是很少出現的類別(各只有5%)<br>
+</li>
+<li>我們如果用<code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code>，就可以把小於threshold的類別合併為others，例如：</li>
+</ul>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my_other</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span><span class="va">.</span>, data <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_other.html">step_other</a></span><span class="op">(</span><span class="va">cat1</span>, threshold <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>train <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span>
+
+<span class="va">my_other</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">df_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">cat1</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 2</span>
+<span class="co">#&gt;   cat1      n</span>
+<span class="co">#&gt;   &lt;fct&gt; &lt;int&gt;</span>
+<span class="co">#&gt; 1 A        50</span>
+<span class="co">#&gt; 2 B        40</span>
+<span class="co">#&gt; 3 other    10</span></code></pre></div>
+<ul>
+<li>那如果我今天的test data裡面，cat1這個變數的分佈長這樣：</li>
+</ul>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">df_test</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
+  cat1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"A"</span>,<span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"B"</span>,<span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"E"</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>,
+  cont1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>
+<span class="op">)</span>
+<span class="va">df_test</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">cat1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/proportions.html">prop.table</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt;   cat1 n   p</span>
+<span class="co">#&gt; 1    A 2 0.2</span>
+<span class="co">#&gt; 2    B 2 0.2</span>
+<span class="co">#&gt; 3    C 2 0.2</span>
+<span class="co">#&gt; 4    D 2 0.2</span>
+<span class="co">#&gt; 5    E 2 0.2</span></code></pre></div>
+<ul>
+<li>那我套用剛剛的 recipe 會怎樣？ 答案是 C, D 會被轉成others(因為剛剛的prep()後，已經確定讓C, D都是others)，而且，E沒看過，也會變 others：</li>
+</ul>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">my_other</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">df_test</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">cat1</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 2</span>
+<span class="co">#&gt;   cat1      n</span>
+<span class="co">#&gt;   &lt;fct&gt; &lt;int&gt;</span>
+<span class="co">#&gt; 1 A         2</span>
+<span class="co">#&gt; 2 B         2</span>
+<span class="co">#&gt; 3 other     6</span></code></pre></div>
+<ul>
+<li>最後，幾點提醒：
+<ul>
+<li>如果本來的類別變數，裡面的level就有名字叫 other，那這樣做會跳error<br>
+</li>
+<li>解決辦法是， <code><a href="https://recipes.tidymodels.org/reference/step_other.html">step_other()</a></code>裡面可以下這個參數 <code>other = "你自己訂other要叫啥"</code>，那就可以訂出你喜歡的other名稱</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="step_bin2factor" class="section level4" number="1.4.2.3">
+<h4>
+<span class="header-section-number">1.4.2.3</span> step_bin2factor<a class="anchor" aria-label="anchor" href="#step_bin2factor"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+</div>
+<div id="對-continuous-variables常見的處理" class="section level3" number="1.4.3">
+<h3>
+<span class="header-section-number">1.4.3</span> 對 continuous variables常見的處理<a class="anchor" aria-label="anchor" href="#%E5%B0%8D-continuous-variables%E5%B8%B8%E8%A6%8B%E7%9A%84%E8%99%95%E7%90%86"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_center" class="section level4" number="1.4.3.1">
+<h4>
+<span class="header-section-number">1.4.3.1</span> step_center<a class="anchor" aria-label="anchor" href="#step_center"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_scale" class="section level4" number="1.4.3.2">
+<h4>
+<span class="header-section-number">1.4.3.2</span> step_scale<a class="anchor" aria-label="anchor" href="#step_scale"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_normalize" class="section level4" number="1.4.3.3">
+<h4>
+<span class="header-section-number">1.4.3.3</span> step_normalize<a class="anchor" aria-label="anchor" href="#step_normalize"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_corr共線處理" class="section level4" number="1.4.3.4">
+<h4>
+<span class="header-section-number">1.4.3.4</span> step_corr(共線處理)<a class="anchor" aria-label="anchor" href="#step_corr%E5%85%B1%E7%B7%9A%E8%99%95%E7%90%86"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li><p>第一個常見的前處理，是砍掉mulit-colinearity的欄位。最簡單的做法，就是numeric variable間兩兩做correlation，然後，把correlation &gt; 某個threshold(e.g. 0.9)的，擇一留下就好</p></li>
+<li><p>舉例來說，iris data 的 correlation matrix為：</p></li>
+</ul>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt;              Sepal.Length Sepal.Width Petal.Length</span>
+<span class="co">#&gt; Sepal.Length    1.0000000  -0.1175698    0.8717538</span>
+<span class="co">#&gt; Sepal.Width    -0.1175698   1.0000000   -0.4284401</span>
+<span class="co">#&gt; Petal.Length    0.8717538  -0.4284401    1.0000000</span>
+<span class="co">#&gt; Petal.Width     0.8179411  -0.3661259    0.9628654</span>
+<span class="co">#&gt;              Petal.Width</span>
+<span class="co">#&gt; Sepal.Length   0.8179411</span>
+<span class="co">#&gt; Sepal.Width   -0.3661259</span>
+<span class="co">#&gt; Petal.Length   0.9628654</span>
+<span class="co">#&gt; Petal.Width    1.0000000</span></code></pre></div>
+<ul>
+<li>可以看到Petal.Length 和 Sepal.Length 的相關高達 0.87<br>
+</li>
+<li>那在recipe中，可以這樣寫，把相關大於0.85的拔掉：</li>
+</ul>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_cor</span> <span class="op">=</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_cor</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 4 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 4 Species      nominal predictor original</span></code></pre></div>
+<ul>
+<li>可以看到，他會把Petal.Length拔掉</li>
+</ul>
+</div>
+</div>
+<div id="交互作用" class="section level3" number="1.4.4">
+<h3>
+<span class="header-section-number">1.4.4</span> 交互作用<a class="anchor" aria-label="anchor" href="#%E4%BA%A4%E4%BA%92%E4%BD%9C%E7%94%A8"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_interact" class="section level4" number="1.4.4.1">
+<h4>
+<span class="header-section-number">1.4.4.1</span> step_interact<a class="anchor" aria-label="anchor" href="#step_interact"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>直接講結論，等等再講原理：
+<ul>
+<li>交互作用都要是連續型變數之間才能做，所以要先把類別變數都step_dummy後，才做交互作用<br>
+</li>
+<li>以 iris data 為例，如果要做類別變數 Species 和 Sepal.Length 的交互作用，那就寫成：</li>
+</ul>
+</li>
+</ul>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_int</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># 先轉 dummy</span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact</a></span><span class="op">(</span> <span class="op">~</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"Species"</span><span class="op">)</span><span class="op">:</span><span class="va">Sepal.Length</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_int</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 8 × 4</span>
+<span class="co">#&gt;   variable                          type    role      source</span>
+<span class="co">#&gt;   &lt;chr&gt;                             &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt; </span>
+<span class="co">#&gt; 1 Sepal.Length                      numeric predictor origi…</span>
+<span class="co">#&gt; 2 Sepal.Width                       numeric predictor origi…</span>
+<span class="co">#&gt; 3 Petal.Length                      numeric predictor origi…</span>
+<span class="co">#&gt; 4 Petal.Width                       numeric predictor origi…</span>
+<span class="co">#&gt; 5 Species_versicolor                numeric predictor deriv…</span>
+<span class="co">#&gt; 6 Species_virginica                 numeric predictor deriv…</span>
+<span class="co">#&gt; 7 Species_versicolor_x_Sepal.Length numeric predictor deriv…</span>
+<span class="co">#&gt; 8 Species_virginica_x_Sepal.Length  numeric predictor deriv…</span></code></pre></div>
+<ul>
+<li>這邊的技巧在於，用 <code>starts_with("Species")</code>，就可以把Species轉成dummy後的變數全抓出來，然後一一和Sepal.Length做交互作用<br>
+</li>
+<li>那如果你很暴力，想把類別變數全轉成dummy，然後所有解釋變數都做交互作用，你可以這樣做：</li>
+</ul>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">iris_int_all</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_nominal</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="co"># 先轉 dummy</span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact</a></span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">:</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">iris</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">iris_int_all</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 21 × 4</span>
+<span class="co">#&gt;    variable                          type    role    source </span>
+<span class="co">#&gt;    &lt;chr&gt;                             &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  </span>
+<span class="co">#&gt;  1 Sepal.Length                      numeric predic… origin…</span>
+<span class="co">#&gt;  2 Sepal.Width                       numeric predic… origin…</span>
+<span class="co">#&gt;  3 Petal.Length                      numeric predic… origin…</span>
+<span class="co">#&gt;  4 Petal.Width                       numeric predic… origin…</span>
+<span class="co">#&gt;  5 Species_versicolor                numeric predic… derived</span>
+<span class="co">#&gt;  6 Species_virginica                 numeric predic… derived</span>
+<span class="co">#&gt;  7 Sepal.Length_x_Sepal.Width        numeric predic… derived</span>
+<span class="co">#&gt;  8 Sepal.Length_x_Petal.Length       numeric predic… derived</span>
+<span class="co">#&gt;  9 Sepal.Length_x_Petal.Width        numeric predic… derived</span>
+<span class="co">#&gt; 10 Sepal.Length_x_Species_versicolor numeric predic… derived</span>
+<span class="co">#&gt; # … with 11 more rows</span></code></pre></div>
+<ul>
+<li>來講點原理： 之前直接用linear model時，交互作用其實是用 <code><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix()</a></code> 在製作的，例如這樣寫：</li>
+</ul>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">Species</span><span class="op">*</span><span class="va">Sepal.Length</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="co"># show a few specific rows</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">51</span>, <span class="fl">101</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt;     (Intercept) Speciesversicolor Speciesvirginica</span>
+<span class="co">#&gt; 1             1                 0                0</span>
+<span class="co">#&gt; 51            1                 1                0</span>
+<span class="co">#&gt; 101           1                 0                1</span>
+<span class="co">#&gt;     Sepal.Length Speciesversicolor:Sepal.Length</span>
+<span class="co">#&gt; 1            5.1                              0</span>
+<span class="co">#&gt; 51           7.0                              7</span>
+<span class="co">#&gt; 101          6.3                              0</span>
+<span class="co">#&gt;     Speciesvirginica:Sepal.Length</span>
+<span class="co">#&gt; 1                             0.0</span>
+<span class="co">#&gt; 51                            0.0</span>
+<span class="co">#&gt; 101                           6.3</span></code></pre></div>
+<ul>
+<li>那就會發現，之前做linear model時，也是先幫你轉dummy，才去相乘的。所以就更放心recipe這樣處理的合理性</li>
+</ul>
+</div>
+</div>
+<div id="移除不必要欄位" class="section level3" number="1.4.5">
+<h3>
+<span class="header-section-number">1.4.5</span> 移除不必要欄位<a class="anchor" aria-label="anchor" href="#%E7%A7%BB%E9%99%A4%E4%B8%8D%E5%BF%85%E8%A6%81%E6%AC%84%E4%BD%8D"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_zv" class="section level4" number="1.4.5.1">
+<h4>
+<span class="header-section-number">1.4.5.1</span> step_zv<a class="anchor" aria-label="anchor" href="#step_zv"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_rm" class="section level4" number="1.4.5.2">
+<h4>
+<span class="header-section-number">1.4.5.2</span> step_rm<a class="anchor" aria-label="anchor" href="#step_rm"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+</div>
+<div id="transformation" class="section level3" number="1.4.6">
+<h3>
+<span class="header-section-number">1.4.6</span> transformation<a class="anchor" aria-label="anchor" href="#transformation"><i class="fas fa-link"></i></a>
+</h3>
+<div id="step_mutate" class="section level4" number="1.4.6.1">
+<h4>
+<span class="header-section-number">1.4.6.1</span> step_mutate<a class="anchor" aria-label="anchor" href="#step_mutate"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>就是借用dplyr的mutate，如下：</li>
+</ul>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">rec</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_mutate.html">step_mutate</a></span><span class="op">(</span>
+    dbl_width <span class="op">=</span> <span class="va">Sepal.Width</span> <span class="op">*</span> <span class="fl">2</span>,
+    half_length <span class="op">=</span> <span class="va">Sepal.Length</span> <span class="op">/</span> <span class="fl">2</span>
+  <span class="op">)</span>
+
+<span class="va">prepped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="va">rec</span>, training <span class="op">=</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">75</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">prepped</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 7 × 4</span>
+<span class="co">#&gt;   variable     type    role      source  </span>
+<span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;   </span>
+<span class="co">#&gt; 1 Sepal.Length numeric predictor original</span>
+<span class="co">#&gt; 2 Sepal.Width  numeric predictor original</span>
+<span class="co">#&gt; 3 Petal.Length numeric predictor original</span>
+<span class="co">#&gt; 4 Petal.Width  numeric predictor original</span>
+<span class="co">#&gt; 5 Species      nominal predictor original</span>
+<span class="co">#&gt; 6 dbl_width    numeric predictor derived </span>
+<span class="co">#&gt; 7 half_length  numeric predictor derived</span></code></pre></div>
+<ul>
+<li>可以看到新增的變數，role會繼承原本的role。</li>
+</ul>
+</div>
+<div id="step_log" class="section level4" number="1.4.6.2">
+<h4>
+<span class="header-section-number">1.4.6.2</span> step_log<a class="anchor" aria-label="anchor" href="#step_log"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>這邊懶得整理了，幾點提醒一下：
+<ul>
+<li>
+<code><a href="https://recipes.tidymodels.org/reference/step_log.html">step_log()</a></code>的預設底數是exp(1)，所以是ln轉換。如果要改，可以這樣改<code>step_log(xx, base = 10)</code><br>
+</li>
+<li>如果<code><a href="https://recipes.tidymodels.org/reference/step_log.html">step_log()</a></code>的變數&lt;= 0，會幫你轉成NA<br>
+</li>
+<li>那要避免log(0)的問題，可以加offset，寫成 <code>step_log(xx, offset = 1)</code>，那就是log(xx+1)的意思</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="step_logit" class="section level4" number="1.4.6.3">
+<h4>
+<span class="header-section-number">1.4.6.3</span> step_logit<a class="anchor" aria-label="anchor" href="#step_logit"><i class="fas fa-link"></i></a>
+</h4>
+<ul>
+<li>就是做這種轉換： <code>f(p) = log(p/(1-p)</code>
+</li>
+</ul>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">313</span><span class="op">)</span>
+<span class="va">examples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">40</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+<span class="op">)</span>
+
+<span class="va">logit_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>, data <span class="op">=</span> <span class="va">examples</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_logit.html">step_logit</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">examples</span><span class="op">)</span>
+
+<span class="va">transformed_te</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">logit_trans</span>, <span class="va">examples</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">examples</span><span class="op">$</span><span class="va">X1</span>, <span class="va">transformed_te</span><span class="op">$</span><span class="va">X1</span><span class="op">)</span></code></pre></div>
+<div class="inline-figure"><img src="recipes_files/figure-html/unnamed-chunk-41-1.png" width="672"></div>
+</div>
+<div id="step_boxcox" class="section level4" number="1.4.6.4">
+<h4>
+<span class="header-section-number">1.4.6.4</span> step_BoxCox<a class="anchor" aria-label="anchor" href="#step_boxcox"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_yeojohnson" class="section level4" number="1.4.6.5">
+<h4>
+<span class="header-section-number">1.4.6.5</span> step_YeoJohnson<a class="anchor" aria-label="anchor" href="#step_yeojohnson"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_ns" class="section level4" number="1.4.6.6">
+<h4>
+<span class="header-section-number">1.4.6.6</span> step_ns<a class="anchor" aria-label="anchor" href="#step_ns"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="step_poly" class="section level4" number="1.4.6.7">
+<h4>
+<span class="header-section-number">1.4.6.7</span> step_poly<a class="anchor" aria-label="anchor" href="#step_poly"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+</div>
+<div id="日期時間類" class="section level3" number="1.4.7">
+<h3>
+<span class="header-section-number">1.4.7</span> 日期時間類<a class="anchor" aria-label="anchor" href="#%E6%97%A5%E6%9C%9F%E6%99%82%E9%96%93%E9%A1%9E"><i class="fas fa-link"></i></a>
+</h3>
+</div>
+<div id="順序很重要" class="section level3" number="1.4.8">
+<h3>
+<span class="header-section-number">1.4.8</span> 順序很重要<a class="anchor" aria-label="anchor" href="#%E9%A0%86%E5%BA%8F%E5%BE%88%E9%87%8D%E8%A6%81"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>剛剛介紹的一堆 <code>step_xxx()</code> ，他是沿著 pipeline 一路處理下來的，所以順序很重要<br>
+</li>
+<li>例如，你如果先做 <code><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize()</a></code> ， 再做 <code><a href="https://recipes.tidymodels.org/reference/step_log.html">step_log()</a></code>，那就準備GG，因為你會餵負值進去<br>
+</li>
+<li>又例如，原本的類別變數裡有missing，你應該先做 <code><a href="https://recipes.tidymodels.org/reference/step_unknown.html">step_unknown()</a></code>，之後再做<code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code>。但如果你倒過來的話，那先做 <code>step_dummy</code>就會先送你NA了，後續你做<code>step_unknwon()</code>也做不到這個類別變數上(因為現在沒有這個類別變數了，剩下dummy後的連續變數)<br>
+</li>
+<li>所以，以下是 <code>recipe</code> 網頁建議的通用step順序，可以參考看看：
+<ol style="list-style-type: decimal">
+<li>Impute<br>
+</li>
+<li>Handle factor levels<br>
+</li>
+<li>Individual transformations for skewness and other issues<br>
+</li>
+<li>Discretize (if needed and if you have no other choice)<br>
+</li>
+<li>Create dummy variables<br>
+</li>
+<li>Create interactions<br>
+</li>
+<li>Normalization steps (center, scale, range, etc)<br>
+</li>
+<li>Multivariate transformation (e.g. PCA, spatial sign, etc)</li>
+</ol>
+</li>
+<li>那對於5,6,7,8的順序是有爭議的，因為上面這種建議作法，完全是以預測為考量，不管解釋的。但另一派認為，<code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code>，再做 <code><a href="https://recipes.tidymodels.org/reference/step_normalize.html">step_normalize()</a></code>，那原本的類別變數轉成dummy的0,1你還可以解釋，但一normalize完，你根本無法解釋這個數值是啥意思了。所以也有人認為應該先 7, 8，再做 5, 6 (我也比較傾向這樣做)</li>
+</ul>
+</div>
+<div id="經典-model-的前處理套路" class="section level3" number="1.4.9">
+<h3>
+<span class="header-section-number">1.4.9</span> 經典 model 的前處理套路<a class="anchor" aria-label="anchor" href="#%E7%B6%93%E5%85%B8-model-%E7%9A%84%E5%89%8D%E8%99%95%E7%90%86%E5%A5%97%E8%B7%AF"><i class="fas fa-link"></i></a>
+</h3>
+<div id="linear-model" class="section level4" number="1.4.9.1">
+<h4>
+<span class="header-section-number">1.4.9.1</span> Linear model<a class="anchor" aria-label="anchor" href="#linear-model"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="lasso" class="section level4" number="1.4.9.2">
+<h4>
+<span class="header-section-number">1.4.9.2</span> Lasso<a class="anchor" aria-label="anchor" href="#lasso"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="random-forest" class="section level4" number="1.4.9.3">
+<h4>
+<span class="header-section-number">1.4.9.3</span> random forest<a class="anchor" aria-label="anchor" href="#random-forest"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+<div id="xgboost" class="section level4" number="1.4.9.4">
+<h4>
+<span class="header-section-number">1.4.9.4</span> xgboost<a class="anchor" aria-label="anchor" href="#xgboost"><i class="fas fa-link"></i></a>
+</h4>
+</div>
+</div>
+<div id="checks" class="section level3" number="1.4.10">
+<h3>
+<span class="header-section-number">1.4.10</span> CHECKS<a class="anchor" aria-label="anchor" href="#checks"><i class="fas fa-link"></i></a>
+</h3>
+<ul>
+<li>recipe網站的首頁 SIMPLE EXAMPLE 最下面，有介紹一下 check 類的function，可以幫你 check missing, class, cols, name, …等東西<br>
+</li>
+<li>之後有空再整理</li>
+</ul>
+</div>
+<div id="客製化自己的-step_function" class="section level3" number="1.4.11">
+<h3>
+<span class="header-section-number">1.4.11</span> 客製化自己的 step_function<a class="anchor" aria-label="anchor" href="#%E5%AE%A2%E8%A3%BD%E5%8C%96%E8%87%AA%E5%B7%B1%E7%9A%84-step_function"><i class="fas fa-link"></i></a>
+</h3>
+
+</div>
+</div>
+</div>
+
+
+
+<div class="chapter-nav">
+<div class="prev"><a href="index.html">About</a></div>
+<div class="next"><a href="linear-model-1.html"><span class="header-section-number">2</span> Linear Model</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#recipes"><span class="header-section-number">1</span> Recipes</a></li>
+<li><a class="nav-link" href="#%E5%85%88%E5%BF%AB%E9%80%9F%E4%BE%86%E5%80%8B%E4%BE%8B%E5%AD%90"><span class="header-section-number">1.1</span> 先快速來個例子</a></li>
+<li>
+<a class="nav-link" href="#specify-variables"><span class="header-section-number">1.2</span> Specify Variables</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#%E5%AE%9A%E7%BE%A9%E5%90%84%E5%80%8B%E8%AE%8A%E6%95%B8%E7%9A%84-type-%E5%92%8C-role"><span class="header-section-number">1.2.1</span> 定義各個變數的 type 和 role</a></li>
+<li><a class="nav-link" href="#update_role"><span class="header-section-number">1.2.2</span> update_role</a></li>
+<li><a class="nav-link" href="#role-inheritance"><span class="header-section-number">1.2.3</span> role inheritance</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#selecting-variables"><span class="header-section-number">1.3</span> Selecting Variables</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#%E7%94%A8%E5%90%8D%E5%AD%97%E9%81%B8%E8%AE%8A%E6%95%B8"><span class="header-section-number">1.3.1</span> 用名字選變數</a></li>
+<li><a class="nav-link" href="#%E7%94%A8type%E9%81%B8%E8%AE%8A%E6%95%B8"><span class="header-section-number">1.3.2</span> 用type選變數</a></li>
+<li><a class="nav-link" href="#%E7%94%A8role%E9%81%B8%E8%AE%8A%E6%95%B8"><span class="header-section-number">1.3.3</span> 用role選變數</a></li>
+<li><a class="nav-link" href="#%E5%85%A8%E9%83%A8%E5%8F%83%E9%9B%9C%E5%9C%A8%E4%B8%80%E8%B5%B7%E9%81%B8%E8%AE%8A%E6%95%B8"><span class="header-section-number">1.3.4</span> 全部參雜在一起選變數</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#define-preprocessing-steps"><span class="header-section-number">1.4</span> Define Preprocessing Steps</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#impute-missing-values"><span class="header-section-number">1.4.1</span> Impute missing values</a></li>
+<li><a class="nav-link" href="#%E5%B0%8D-categorical-variables%E5%B8%B8%E8%A6%8B%E7%9A%84%E8%99%95%E7%90%86"><span class="header-section-number">1.4.2</span> 對 categorical variables常見的處理</a></li>
+<li><a class="nav-link" href="#%E5%B0%8D-continuous-variables%E5%B8%B8%E8%A6%8B%E7%9A%84%E8%99%95%E7%90%86"><span class="header-section-number">1.4.3</span> 對 continuous variables常見的處理</a></li>
+<li><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E4%BD%9C%E7%94%A8"><span class="header-section-number">1.4.4</span> 交互作用</a></li>
+<li><a class="nav-link" href="#%E7%A7%BB%E9%99%A4%E4%B8%8D%E5%BF%85%E8%A6%81%E6%AC%84%E4%BD%8D"><span class="header-section-number">1.4.5</span> 移除不必要欄位</a></li>
+<li><a class="nav-link" href="#transformation"><span class="header-section-number">1.4.6</span> transformation</a></li>
+<li><a class="nav-link" href="#%E6%97%A5%E6%9C%9F%E6%99%82%E9%96%93%E9%A1%9E"><span class="header-section-number">1.4.7</span> 日期時間類</a></li>
+<li><a class="nav-link" href="#%E9%A0%86%E5%BA%8F%E5%BE%88%E9%87%8D%E8%A6%81"><span class="header-section-number">1.4.8</span> 順序很重要</a></li>
+<li><a class="nav-link" href="#%E7%B6%93%E5%85%B8-model-%E7%9A%84%E5%89%8D%E8%99%95%E7%90%86%E5%A5%97%E8%B7%AF"><span class="header-section-number">1.4.9</span> 經典 model 的前處理套路</a></li>
+<li><a class="nav-link" href="#checks"><span class="header-section-number">1.4.10</span> CHECKS</a></li>
+<li><a class="nav-link" href="#%E5%AE%A2%E8%A3%BD%E5%8C%96%E8%87%AA%E5%B7%B1%E7%9A%84-step_function"><span class="header-section-number">1.4.11</span> 客製化自己的 step_function</a></li>
+</ul>
+</li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/rstudio/bookdown-demo/blob/master/recipes.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/rstudio/bookdown-demo/edit/master/recipes.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+</div>
+  
+
+  
+
+</div>
+ <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>ML Cookbook</strong>" was written by Hank Lee. It was last built on 2022-01-17.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer>
+</body>
+</html>

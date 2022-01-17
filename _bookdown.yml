@@ -8,6 +8,9 @@ language:
     chapter_name: "Chapter "
 rmd_files: 
 - index.Rmd  
+# - H_EDA.Rmd
+- H_Preprocess.Rmd
+- recipes.Rmd
 - ch1_regression.Rmd  
 - ch1_1_linear_model.Rmd  
 - ch1_2_glmnet.Rmd  
@@ -17,7 +20,7 @@ rmd_files:
 - ch2_binary_classification.Rmd
 - ch2_1_logistic_reg.Rmd
 - ch2_2_glmnet.Rmd
-- ch2_3_tree.Rmd
+# - ch2_3_tree.Rmd
 - ch2_4_random_forest.Rmd
 - ch2_5_xgboost.Rmd
 - ch3_multi_classification.Rmd

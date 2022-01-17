@@ -1,7 +1,7 @@
 --- 
 title: "ML Cookbook"
 author: "Hank Lee"
-date: "2021-12-25"
+date: "2022-01-17"
 site: bookdown::bookdown_site
 documentclass: book
 description: "This is a cookbook of machine learning"

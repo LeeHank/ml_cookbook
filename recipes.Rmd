@@ -1,0 +1,588 @@
+# Recipes  
+
+```{r}
+library(tidyverse)
+library(recipes)
+```
+
+* 這張圖很好的解釋了`recipe`這個package的步驟：  
+
+![](images/recipes.jpg)  
+
+* specify variables:
+  * 這一個步驟，就像寫食譜前，要先標清楚要用哪些食材的意思。  
+  * 用`recipe()`來先標清楚各個variable的type和role。type就是numeric/nominal, role就是outcome/predictor  
+  * 最簡單的一種寫法，就是這樣： `recipe(y~., data = data)`。那透過model formula，系統就知道每個欄位的角色了：y是outcome，其他所有欄位都是predictor。而放進去的data，只是讓系統去知道，每個欄位的type是什麼：factor/character會被判定為nominal, integer/numeric會被判定為numeric。  
+  * 對於每個欄位的type和role，都還可以微調，這等等再細講  
+* define pre-processing steps:   
+  * 這一步驟，就是在寫食譜。把做一道菜的每一個步驟寫好  
+  * 用一堆`step_*` function，來說明to-do事項有哪些。例如我要做one-hot encoding、我要補遺漏值、我要做normalize...    
+  * 舉例來說，`step_log(total_time, base = 10)`，就表示我要對total_time這個欄位取log  
+  
+    
+* provide datasets for recipe steps:   
+  * 這一步驟，就是做菜前要先備料，的備料階段。  
+  * 用`prep()` function，來prepare所需的材料(例如你要做one-hot encoding時，那個factor的levels到底有哪些？要做normalize時，你的mean和sd要給多少？你要給我一份實際的資料我才知道，這邊通常都是丟training data進去)  
+* apply pre-processing:  
+  * 這一步驟，就是實際來做菜了。  
+  * 用`bake()`來實際對給定的資料做preprocessing   
+
+## 先快速來個例子  
+
+* 舉例來說，我有一筆 iris data，我先切成training/testing:  
+
+```{r}
+library(rsample)
+set.seed(123)
+iris_split = initial_split(iris, strata = Species)
+iris_train = training(iris_split)
+iris_test = testing(iris_split)
+iris_train
+```
+
+* 那從這筆資料，就可發現有5個變數，其中4個是連續型，一個是類別型  
+* 那我用 `recipe(Species ~., data = iris_train)` ，就可定義好這些變數的 type 和 role：  
+
+```{r}
+iris_recipe <- recipe(Species ~ ., data = iris_train)
+summary(iris_recipe)
+```
+
+* 可以看到，藉由 `data = iris_train`，這個recipe物件就可以知道variable有哪 5 個，然後從這5個變數在此data中的型別，就可以得知他的type。  
+* 接著，formula: `Species ~ .`，這個recipe物件就可以知道Species的role是outcome，而其他都是predictor 
+* 特別提醒：  
+  * 這邊的formula，不是最後我們要fit model所用的formula。這個formula只是為了定義出各個變數的角色而已。  
+  * 這邊的data，也不是我們要fit model所用的data。這邊的data只是讓我知道總共有哪些變數，各個變數的type是什麼而已。所以這邊你要放iris_train, iris_test, iris, 甚至cv的data， 都隨便你，只要這個data裡有你想specify的變數，且這個data各個變數的type都是正確的就好。  
+
+* 接下來看第二步驟，我想把type = numeric 的變數，都做normalize:  
+
+```{r}
+iris_recipe <- recipe(Species ~ ., data = iris_train) %>%
+  step_normalize(all_numeric())
+
+iris_recipe
+```
+
+* 可以看到Operations裡面，寫了Centering and scaling for all_numeric()    
+* 接下來，我要prepare我的資料了。我在prep裡面，放入iris_train。那normalize的mean和sd，就都會根據iris_train來計算出來  
+
+```{r}
+iris_rec_prep <- iris_recipe %>% 
+  prep(training = iris_train)
+```
+
+* 最後，應用到testing set  
+
+```{r}
+iris_rec_prep %>%
+  bake(new_data = iris_test)
+```
+
+* 接下來各章，就要來講細節  
+
+## Specify Variables  
+
+### 定義各個變數的 type 和 role  
+
+* 這一步其實就像是資料庫裡面給schema or meta-data 的感覺，我們要去定義每個變數的：  
+  * type: 這個變數的type是nominal or continuous    
+  * role: 這個變數的角色是 predictor or response  
+* 那最簡單的寫法，就是給他 formula + 一組資料，這樣就能快速的搞定每個variable的type和role。  
+* 舉例來說，我有一筆 iris data:  
+
+```{r}
+iris
+```
+
+* 那從這筆資料，就可發現有5個變數，其中4個是連續型，一個是類別型  
+* 那我用 `recipe(Species ~., data = iris)` ，就可定義好這些變數的 type 和 role：  
+
+```{r}
+iris_recipe <- recipe(Species ~ ., data = iris)
+summary(iris_recipe)
+```
+
+* 可以看到，藉由 `data = iris`，這個recipe物件就可以知道variable有哪 5 個，然後從這5個變數在此data中的型別，就可以得知他的type。  
+* 接著，formula: `Species ~ .`，這個recipe物件就可以知道Species的role是outcome，而其他都是predictor 
+* 特別提醒：  
+  * 這邊的formula，不是最後我們要fit model所用的formula。這個formula只是為了定義出各個變數的角色而已。  
+  * 這邊的data，也不是我們要fit model所用的data。這邊的data只是讓我知道總共有哪些變數，各個變數的type是什麼而已。所以這邊你要放training data, testing data, total_data, cv_data 都隨便你，只要這個data裡有你想specify的變數，且這個data各個變數的type都是正確的就好。  
+* 有了這個概念後，就可以來舉一反三了，例如，我想指名Species是predictor就好：  
+
+```{r}
+recipe(~Species, data = iris) %>% summary()
+```
+
+* 我想指名 `Sepal.Length` & `Sepal.Width` 是 outcome，其他都是 predictor:  
+
+```{r}
+recipe(Sepal.Length + Sepal.Width ~ ., data = iris) %>% summary()
+```
+
+* 我覺得大家都是 predictor  
+
+```{r}
+recipe(~ ., data = iris) %>% summary()
+```
+
+* 我不想指定role，只想指定type  
+
+```{r}
+recipe(iris) %>% summary()
+```
+
+### update_role  
+
+* 如果我想更新某些變數的角色，那我可以用 `update_role()`  
+* 舉例來說，剛剛的iris data，我目前的recipe長這樣：  
+
+```{r}
+iris_recipe <- recipe(Species ~ ., data = iris)
+summary(iris_recipe)
+```
+
+* 那我如果突然不想做supervised learning了，我想做做分群或PCA等unsupervised learning，那我就把`outcome`的role，轉成`predictor`  
+
+```{r}
+iris_recipe %>%
+  update_role(Species, new_role = "predictor") %>%
+  summary()
+```
+
+* 甚至，這些變數其實也不是predictor了，因為在unsupervised learning裡，根本沒predictor這種東西。那我可以更新他們的角色，叫做"characteristic"。這個名稱隨便你取，你取啥都可以：  
+
+```{r}
+iris_recipe %>%
+  update_role(everything(), new_role = "characteristic") %>%
+  summary()
+```
+
+### role inheritance  
+
+* 等等會學很多step_function，他會改變我原先的變數。那變數改變後，他的角色會變怎樣？  
+* 答案是，角色會繼承(預設)。或是，你在做step_function時，直接assign給他新角色。  
+
+```{r}
+recipe( ~ ., data = iris) %>% 
+  step_dummy(Species) %>% 
+  prep(training = iris) %>% 
+  summary()
+```
+
+* 可以看到，Species已經被轉成Species_versicolor和Species_virginica了。  
+* 會轉成這兩個level，是靠`prep()`裡面的data來轉的。  
+* 而轉完的role，仍然是predictor。而source可以看到，從original變成derived，因為這是後續生出來的變數  
+* 那另一個例子是，我做step_dummy時，直接assign給他新角色，例如：  
+
+```{r}
+recipe( ~ ., data = iris) %>% 
+  step_dummy(Species, role = "trousers") %>% 
+  prep() %>% 
+  summary()
+```
+
+* 這邊就可以看到，本來Species在最一開始，是predictor的角色，但我在做step_dummy時，assign他轉換後的結果要是"trousers"這個角色。那轉完就可以看到role的確是 trousers  
+
+
+## Selecting Variables  
+
+* 上一章定義完變數的meta-data後，現在每個變數都具有三個特徵：  
+  * 這個變數的名字  
+  * 這個變數的type  
+  * 這個變數的role  
+* 所以，我在選擇變數的時候，我就可以善用這三個特徵來選變數  
+
+### 用名字選變數  
+
+* 舉例來說，我的step_dummy，想做在 species 上，那我可以寫：  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_dummy(Species) %>%
+  prep() %>%
+  juice()
+```
+
+* 我也可以用dplyr的`starts_with()`, `end_with()`,...來選變數。例如：  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_normalize(starts_with("Sepal")) %>%
+  prep() %>%
+  juice()
+```
+
+### 用type選變數  
+
+* 變數的type有nominal和 numeric，所以，我可以這樣做：  
+
+#### all_numeric()  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_normalize(all_numeric()) %>%
+  prep() %>%
+  juice()
+```
+
+#### all_nominal()  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_dummy(all_nominal()) %>%
+  prep() %>%
+  juice()
+```
+
+### 用role選變數  
+
+#### all_predictors()  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_normalize(all_predictors()) %>%
+  prep() %>%
+  juice()
+```
+
+#### all_outcomes()  
+
+```{r}
+recipe(Species ~ ., data = iris) %>%
+  step_dummy(all_outcomes()) %>%
+  prep() %>%
+  juice()
+```
+
+#### has_role()  
+
+```{r}
+recipe(Species ~ ., 
+       data = iris %>% mutate(money = rnorm(n = 150, mean = 100000, sd = 1000))) %>%
+  update_role(money, new_role = "whatever") %>%
+  step_log(has_role("whatever")) %>%
+  prep() %>%
+  juice()
+```
+
+### 全部參雜在一起選變數  
+
+* 例如我可以選全部的 "type = numeric" but "role != outcome"的變數，做log處理  
+
+```{r}
+recipe(money ~ ., data = iris %>% mutate(money = rnorm(150, 100000, 1000))) %>%
+  step_normalize(all_numeric(), -all_outcomes()) %>%
+  prep() %>%
+  juice()
+```
+
+* 也有一些 compund selectors，例如： `all_nominal_predictors()` or `all_numeric_predictors()`  
+
+## Define Preprocessing Steps  
+
+### Impute missing values  
+
+#### step_unknown    
+
+* 如果 cat1 是個類別變數，然後資料裡面有 missing，我們可以用 `step_unknown()`，把missing的地方幫他補成 "unknown"  
+
+```{r}
+df_train = data.frame(
+  cat1 = c("A","A","B",NA, "C"),
+  cont1 = 1:5
+)
+my_unknown = recipe(~., data = df_train) %>%
+  step_unknown(cat1) %>%
+  prep(training = df_train)
+
+bake(my_unknown, df_train)
+```
+
+* 也可以加上 `new_level = "xxx"`，來把 unknown 換成你喜歡的 level  
+
+```{r}
+my_unknown2 = recipe(~., data = df_train) %>%
+  step_unknown(cat1, new_level = "missing_catcat") %>%
+  prep(training = df_train)
+
+bake(my_unknown2, df_train)
+```
+
+### 對 categorical variables常見的處理  
+
+#### step_dummy    
+
+##### dummy coding  
+
+* 雖然，很多package都有內建這個功能(e.g. lm()會自動把factor變數做dummy)，但各個package常常有不一致的地方：  
+  * 有的package用dummy coding，有的用one-hot encoding  
+  * 各個package在做dummy/one-hot時，命名方式也不一樣  
+* 所以，我們可以在前處理的時候，用recipe先把類別變數都統一的轉好，那丟到不同model的engine時，就不用再管之後彼此會出現不一致了  
+* 繼續舉剛剛的例子，並且先建立一個original欄位，：  
+
+```{r}
+iris2 <- iris %>% mutate(Species_old = Species)
+iris_dummy = recipe( ~ ., data = iris2) %>% 
+  step_dummy(Species) %>% 
+  prep(training = iris2)
+summary(iris_dummy)
+```
+
+* 做轉換：  
+
+```{r}
+iris_dummy %>%
+  bake(new_data = iris2) %>%
+  select(Species_old, starts_with("Species")) %>%
+  distinct()
+```
+
+##### contrast  
+
+* 在實驗設計裡，還有不同的dummy coding方式，例如sum coding, helmert coding, ...  
+* 和 dummy 的差別是，他coding完可能是用 sum = 0 的方式 (e.g. coding成 c(-1, 0, 1))  
+* 那這部分在 recipe 的網站上有範例 (ARTICLES/DUMMY VARIABLES ...)，我這邊很少用就先不整理了  
+
+##### one-hot coding  
+
+* 加上 `one_hot = TRUE` 就好  
+
+```{r}
+iris2 <- iris %>% mutate(Species_old = Species)
+iris_onehot = recipe( ~ ., data = iris2) %>% 
+  step_dummy(Species, one_hot = TRUE) %>% 
+  prep(training = iris2)
+iris_onehot %>%
+  bake(new_data = iris2) %>%
+  select(Species_old, starts_with("Species")) %>%
+  distinct()
+```
+
+
+#### step_other  
+
+* 對於類別變數，我們可以把出現頻率較少的level，全都整併成 others 
+* 如果bake的時候，餵進來的變數，有新的level，那他也會被併到 others 裡面  
+* 以下舉例：  
+
+```{r}
+df_train = data.frame(
+  cat1 = c(rep("A",50), rep("B",40), rep("C", 5), rep("D", 5)),
+  cont1 = rnorm(100)
+)
+
+df_train %>%
+  count(cat1) %>%
+  mutate(p = prop.table(n))
+```
+
+* 上面這個資料集，training data的cat1有4個level，而C和D是很少出現的類別(各只有5%)  
+* 我們如果用`step_dummy()`，就可以把小於threshold的類別合併為others，例如：  
+
+```{r}
+my_other = recipe(~., data = df_train) %>%
+  step_other(cat1, threshold = 0.1) %>%
+  prep(train = df_train)
+
+my_other %>%
+  bake(new_data = df_train) %>%
+  count(cat1)
+```
+
+* 那如果我今天的test data裡面，cat1這個變數的分佈長這樣：  
+
+```{r}
+df_test = data.frame(
+  cat1 = c(rep("A",2), rep("B",2), rep("C", 2), rep("D", 2), rep("E",2)),
+  cont1 = rnorm(10)
+)
+df_test %>%
+  count(cat1) %>%
+  mutate(p = prop.table(n))
+```
+
+* 那我套用剛剛的 recipe 會怎樣？ 答案是 C, D 會被轉成others(因為剛剛的prep()後，已經確定讓C, D都是others)，而且，E沒看過，也會變 others：  
+
+```{r}
+my_other %>%
+  bake(new_data = df_test) %>%
+  count(cat1)
+```
+
+* 最後，幾點提醒：  
+  * 如果本來的類別變數，裡面的level就有名字叫 other，那這樣做會跳error  
+  * 解決辦法是， `step_other()`裡面可以下這個參數 `other = "你自己訂other要叫啥"`，那就可以訂出你喜歡的other名稱  
+
+#### step_bin2factor  
+
+### 對 continuous variables常見的處理  
+
+#### step_center  
+
+#### step_scale  
+
+#### step_normalize  
+
+#### step_corr(共線處理)  
+
+* 第一個常見的前處理，是砍掉mulit-colinearity的欄位。最簡單的做法，就是numeric variable間兩兩做correlation，然後，把correlation > 某個threshold(e.g. 0.9)的，擇一留下就好  
+
+* 舉例來說，iris data 的 correlation matrix為：  
+
+```{r}
+iris %>%
+  select(-Species) %>%
+  cor()
+```
+* 可以看到Petal.Length 和 Sepal.Length 的相關高達 0.87  
+* 那在recipe中，可以這樣寫，把相關大於0.85的拔掉：  
+
+```{r}
+iris_cor = recipe(~ ., data = iris) %>%
+  step_corr(all_numeric_predictors(), threshold = 0.85) %>%
+  prep(training = iris)
+
+summary(iris_cor)
+```
+* 可以看到，他會把Petal.Length拔掉  
+
+### 交互作用  
+
+#### step_interact  
+
+* 直接講結論，等等再講原理：  
+  * 交互作用都要是連續型變數之間才能做，所以要先把類別變數都step_dummy後，才做交互作用  
+  * 以 iris data 為例，如果要做類別變數 Species 和 Sepal.Length 的交互作用，那就寫成：  
+
+```{r}
+iris_int <- 
+  recipe( ~ ., data = iris) %>% 
+  step_dummy(Species) %>% # 先轉 dummy
+  step_interact( ~ starts_with("Species"):Sepal.Length) %>%
+  prep(training = iris)
+summary(iris_int)
+```
+
+* 這邊的技巧在於，用 `starts_with("Species")`，就可以把Species轉成dummy後的變數全抓出來，然後一一和Sepal.Length做交互作用  
+* 那如果你很暴力，想把類別變數全轉成dummy，然後所有解釋變數都做交互作用，你可以這樣做：  
+
+```{r}
+iris_int_all <- 
+  recipe( ~ ., data = iris) %>% 
+  step_dummy(all_nominal()) %>% # 先轉 dummy
+  step_interact(~all_predictors():all_predictors()) %>%
+  prep(training = iris)
+summary(iris_int_all)
+```
+
+* 來講點原理： 之前直接用linear model時，交互作用其實是用 `model.matrix()` 在製作的，例如這樣寫：  
+
+```{r}
+model.matrix(~ Species*Sepal.Length, data = iris) %>% 
+  as.data.frame() %>% 
+  # show a few specific rows
+  slice(c(1, 51, 101)) %>% 
+  as.data.frame()
+```
+
+* 那就會發現，之前做linear model時，也是先幫你轉dummy，才去相乘的。所以就更放心recipe這樣處理的合理性  
+
+### 移除不必要欄位    
+
+#### step_zv  
+
+#### step_rm  
+
+### transformation  
+
+#### step_mutate  
+
+* 就是借用dplyr的mutate，如下：  
+
+```{r}
+rec <-
+  recipe( ~ ., data = iris) %>%
+  step_mutate(
+    dbl_width = Sepal.Width * 2,
+    half_length = Sepal.Length / 2
+  )
+
+prepped <- prep(rec, training = iris %>% slice(1:75))
+summary(prepped)
+```
+
+* 可以看到新增的變數，role會繼承原本的role。  
+
+
+#### step_log  
+
+* 這邊懶得整理了，幾點提醒一下：  
+  * `step_log()`的預設底數是exp(1)，所以是ln轉換。如果要改，可以這樣改`step_log(xx, base = 10)`  
+  * 如果`step_log()`的變數<= 0，會幫你轉成NA  
+  * 那要避免log(0)的問題，可以加offset，寫成 `step_log(xx, offset = 1)`，那就是log(xx+1)的意思  
+
+#### step_logit  
+
+* 就是做這種轉換： `f(p) = log(p/(1-p)`  
+
+```{r}
+set.seed(313)
+examples <- data.frame(
+  matrix(runif(40), ncol = 2)
+)
+
+logit_trans <- recipe(~ X1 + X2, data = examples) %>%
+  step_logit(all_predictors()) %>%
+  prep(training = examples)
+
+transformed_te <- bake(logit_trans, examples)
+plot(examples$X1, transformed_te$X1)
+```
+
+
+#### step_BoxCox  
+
+#### step_YeoJohnson  
+
+#### step_ns  
+
+#### step_poly  
+
+### 日期時間類  
+
+
+
+### 順序很重要  
+
+* 剛剛介紹的一堆 `step_xxx()` ，他是沿著 pipeline 一路處理下來的，所以順序很重要  
+* 例如，你如果先做 `step_normalize()` ， 再做 `step_log()`，那就準備GG，因為你會餵負值進去  
+* 又例如，原本的類別變數裡有missing，你應該先做 `step_unknown()`，之後再做`step_dummy()`。但如果你倒過來的話，那先做 `step_dummy`就會先送你NA了，後續你做`step_unknwon()`也做不到這個類別變數上(因為現在沒有這個類別變數了，剩下dummy後的連續變數)  
+* 所以，以下是 `recipe` 網頁建議的通用step順序，可以參考看看：  
+  1. Impute  
+  2. Handle factor levels  
+  3. Individual transformations for skewness and other issues  
+  4. Discretize (if needed and if you have no other choice)  
+  5. Create dummy variables    
+  6. Create interactions  
+  7. Normalization steps (center, scale, range, etc)  
+  8. Multivariate transformation (e.g. PCA, spatial sign, etc)  
+
+* 那對於5,6,7,8的順序是有爭議的，因為上面這種建議作法，完全是以預測為考量，不管解釋的。但另一派認為，`step_dummy()`，再做 `step_normalize()`，那原本的類別變數轉成dummy的0,1你還可以解釋，但一normalize完，你根本無法解釋這個數值是啥意思了。所以也有人認為應該先 7, 8，再做 5, 6 (我也比較傾向這樣做)  
+
+
+### 經典 model 的前處理套路  
+
+#### Linear model  
+
+#### Lasso  
+
+#### random forest  
+
+#### xgboost  
+
+### CHECKS  
+
+* recipe網站的首頁 SIMPLE EXAMPLE 最下面，有介紹一下 check 類的function，可以幫你 check missing, class, cols, name, ...等東西  
+* 之後有空再整理  
+
+### 客製化自己的 step_function  
